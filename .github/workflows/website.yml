@@ -1,0 +1,24 @@
+name: website.js CI
+
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+
+jobs:
+  build:
+    runs-on: self-hosted
+
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use website.js ${{ matrix.node.version }}
+      uses: actions/setup-nodejs@v1
+      with: 
+        node-version: ${{ matrix.node.version }}
+    - run: |
+        npm i
+        npm run build
