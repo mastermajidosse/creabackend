@@ -1,6 +1,5 @@
 name: website.js CI
 
-
 on:
   push:
     branches: [ master ]
@@ -11,8 +10,6 @@ on:
 jobs:
   build:
     runs-on: self-hosted
-
-
     steps:
     - uses: actions/checkout@v2
     - name: Use website.js ${{ matrix.node.version }}
@@ -20,5 +17,5 @@ jobs:
       with: 
         node-version: ${{ matrix.node.version }}
     - run: |
-        npm i
+        npm install
         npm run build
