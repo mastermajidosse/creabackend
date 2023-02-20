@@ -1,17 +1,7 @@
 import mongoose from 'mongoose'
 import bcrypt from 'bcryptjs'
 
-const socialMediaSchema = mongoose.Schema({
-  Facebook: {
-    type: String
-  },
-  Instagram: {
-    type: String
-  },
-  Twitter: {
-    type: String
-  }
-})
+
 
 const userSchema = mongoose.Schema(
   {
@@ -27,7 +17,6 @@ const userSchema = mongoose.Schema(
     phone: {
       type: String,
     },
-    socialMediaLinks: socialMediaSchema,
     password: {
       type: String,
       required: true,
@@ -53,10 +42,33 @@ const userSchema = mongoose.Schema(
       type: Boolean,
       default: false
     },
-    savedPosts: {
+    likedPosts: {
       type: [String],
       default: []
+    },
+    followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    wins:{
+      type:Number,
+      default:0
+    },
+     draws:{
+      type:Number,
+      default:0
+    },
+    loses:{
+      type:Number,
+      default:0
+    },
+    isCreator:{
+      type:Boolean,
+      default:false
+    },
+    current_league :{
+      type: mongoose.Schema.Types.ObjectId, ref: 'League',
+      default:null
     }
+    
   },
   {
     timestamps: true,

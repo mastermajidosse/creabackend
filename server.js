@@ -3,9 +3,6 @@ import dotenv from 'dotenv'
 import connectDb from './config/connectDb.js'
 import bodyParser from 'body-parser'
 import cors from 'cors'
-import postRoutes from './routes/postRoutes.js';
-import categoryRoutes from './routes/categoryRoutes.js';
-import userRoutes from './routes/userRoutes.js';
 const app = express()
 
 app.use(cors({
@@ -23,9 +20,7 @@ dotenv.config()
 connectDb()
 
 app.get('/', (req, res) => res.send('API is running...'))
-app.use('/api/posts', postRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/categories', categoryRoutes);
+
 
 
 
