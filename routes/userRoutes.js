@@ -1,6 +1,7 @@
 import express from 'express';
 import {
-    deleteUser,
+  deleteUser,
+  getUserById,
   getUserProfile,
   getUsers,
   login,
@@ -20,10 +21,8 @@ router
   .get(protect, getUserProfile)
   .put(protect, updateUserProfile);
 
-router
-  .route('/:id')
-  .delete(protect, admin, deleteUser)
-//   .get(protect, getUserById)
-//   .put(protect, admin, updateUser);
+router.route('/:id').delete(protect, admin, deleteUser)
+    .get(protect, getUserById)
+
 
 export default router;
