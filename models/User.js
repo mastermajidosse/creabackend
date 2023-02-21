@@ -1,7 +1,5 @@
-import mongoose from 'mongoose'
-import bcrypt from 'bcryptjs'
-
-
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
 const userSchema = mongoose.Schema(
   {
@@ -32,62 +30,66 @@ const userSchema = mongoose.Schema(
     isAdmin: {
       type: Boolean,
       required: true,
-      default: false
+      default: false,
     },
     blocked: {
       type: Boolean,
-      default: false
+      default: false,
     },
     verified: {
       type: Boolean,
-      default: false
+      default: false,
     },
     likedPosts: {
       type: [String],
-      default: []
+      default: [],
     },
     followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-    wins:{
-      type:Number,
-      default:0
+    wins: {
+      type: Number,
+      default: 0,
     },
-     draws:{
-      type:Number,
-      default:0
+    draws: {
+      type: Number,
+      default: 0,
     },
-    loses:{
-      type:Number,
-      default:0
+    loses: {
+      type: Number,
+      default: 0,
     },
-    isCreator:{
-      type:Boolean,
-      default:false
+    isCreator: {
+      type: Boolean,
+      default: false,
     },
-    current_league :{
-      type: mongoose.Schema.Types.ObjectId, ref: 'League',
-      default:null
-    }
-    
+    currentLeague: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'League',
+      default: null,
+    },
+    initialCountFollowers: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,
   }
-)
+);
 
 userSchema.methods.matchPassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password)
-}
+  return await bcrypt.compare(enteredPassword, this.password);
+};
 
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
-    next()
+    next();
   }
 
-  const salt = await bcrypt.genSalt(10)
-  this.password = await bcrypt.hash(this.password, salt)
-})
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+});
 
-const User = mongoose.model('User', userSchema)
+const User = mongoose.model('User', userSchema);
 
-export default User
+export default User;
