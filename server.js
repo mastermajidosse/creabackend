@@ -6,6 +6,7 @@ import cors from 'cors';
 import userRoutes from './routes/userRoutes.js';
 import videoRoutes from './routes/videoRoutes.js';
 import imageRoutes from './routes/imageRoutes.js';
+import postRoutes from './routes/postRoutes.js'
 const app = express();
 
 app.use(
@@ -30,6 +31,7 @@ connectDb();
 
 app.get('/', (req, res) => res.send('API is running...'));
 app.use('/api/users', userRoutes);
+app.use('/api/posts', postRoutes);
 app.use('/api/videos', videoRoutes);
 app.use('/api/images', imageRoutes);
 
