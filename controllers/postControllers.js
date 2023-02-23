@@ -6,15 +6,17 @@ import User from '../models/User.js';
 // @route   GET /api/posts?league=league
 // @access  Public
 const getPosts = asyncHandler(async (req, res) => {
-  const league = req.query.status
-    ? {
-        status: {
-          $regex: req.query.league,
-          $options: 'i',
-        },
-      }
-    : {};
-  const posts = await Post.find({ ...league }).sort({ createdAt: -1 });
+  const leagueId = req.query.league;
+
+  let posts;
+  if (leagueId) {
+    posts = await Post.find({ league: leagueId, status: 'done' }).populate(
+      'league',
+      'name'
+    );
+  } else {
+    posts = await Post.find({ status: 'done' }).populate('league', 'name');
+  }
   res.status(200).json(posts);
 });
 // @desc    create a post
@@ -48,6 +50,7 @@ const createPost = asyncHandler(async (req, res) => {
       creator1: competitor,
       video1: videoUrl,
     });
+    await newPost.populate('league').execPopulate();
     await newPost.save();
     return res.status(200).json(newPost);
   }
