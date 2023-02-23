@@ -11,11 +11,10 @@ const getPosts = asyncHandler(async (req, res) => {
   let posts;
   if (leagueId) {
     posts = await Post.find({ league: leagueId, status: 'done' }).populate(
-      'league',
-      'name'
+      'league'
     );
   } else {
-    posts = await Post.find({ status: 'done' }).populate('league', 'name');
+    posts = await Post.find({ status: 'done' }).populate('league');
   }
   res.status(200).json(posts);
 });
@@ -28,6 +27,9 @@ const createPost = asyncHandler(async (req, res) => {
   const competitor = await User.findById(userId);
   if (!competitor) {
     res.status(404).json({ message: 'The user does not exist' });
+  }
+  if (competitor.currentLeague != null) {
+    res.status(401).json({ message: 'You do not belong to any league' });
   }
   const league = competitor.currentLeague;
   const existingPost = await Post.findOne({

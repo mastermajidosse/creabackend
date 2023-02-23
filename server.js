@@ -6,7 +6,8 @@ import cors from 'cors';
 import userRoutes from './routes/userRoutes.js';
 import videoRoutes from './routes/videoRoutes.js';
 import imageRoutes from './routes/imageRoutes.js';
-import postRoutes from './routes/postRoutes.js'
+import postRoutes from './routes/postRoutes.js';
+import leagueRoutes from './routes/LeagueRoutes.js';
 const app = express();
 
 app.use(
@@ -34,6 +35,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/videos', videoRoutes);
 app.use('/api/images', imageRoutes);
+app.use('/api/leagues', leagueRoutes);
 
 const port = process.env.PORT || 5000;
 app.listen(
