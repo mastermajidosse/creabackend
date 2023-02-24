@@ -8,6 +8,14 @@ const postSchema = mongoose.Schema(
       type: String,
       default: '',
     },
+    thumbnail1: {
+      type: String,
+      default: '',
+    },
+    thumbnail2: {
+      type: String,
+      default: '',
+    },
     video2: {
       type: String,
       default: '',
