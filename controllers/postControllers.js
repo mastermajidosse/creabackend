@@ -1,4 +1,5 @@
 import asyncHandler from 'express-async-handler';
+import Challenge from '../models/Challenge.js';
 import Post from '../models/Post.js';
 import User from '../models/User.js';
 
@@ -39,11 +40,15 @@ const createPost = asyncHandler(async (req, res) => {
     challenge,
   });
 
+  const existingChallenge = await Challenge.findById(challenge);
+
   if (existingPost) {
     // If there's already a post in the league, add the user to the post
     existingPost.creator2 = competitor;
     existingPost.video2 = videoUrl;
     existingPost.status = 'done';
+    existingChallenge.participants.push(existingPost.creator1, competitor);
+    await existingChallenge.save();
     await existingPost.save();
     return res.status(200).json(existingPost);
   } else {
