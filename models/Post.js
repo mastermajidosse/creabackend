@@ -15,13 +15,24 @@ const postSchema = mongoose.Schema(
     league: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'League',
-      default:null
+      default: null,
+    },
+    challenge: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Challenge',
+      default: null,
     },
     status: {
       type: String,
       enum: ['waiting', 'done'],
       default: 'waiting',
     },
+    votes: [
+      {
+        user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        winner: { type: Number, enum: [1, 2] }, // 1 for video1, 2 for video2
+      },
+    ],
   },
   {
     timestamps: true,

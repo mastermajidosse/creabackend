@@ -8,7 +8,9 @@ import videoRoutes from './routes/videoRoutes.js';
 import imageRoutes from './routes/imageRoutes.js';
 import postRoutes from './routes/postRoutes.js';
 import leagueRoutes from './routes/LeagueRoutes.js';
+import challengeRoutes from './routes/challengeRoutes.js'
 const app = express();
+
 
 app.use(
   cors({
@@ -36,6 +38,9 @@ app.use('/api/posts', postRoutes);
 app.use('/api/videos', videoRoutes);
 app.use('/api/images', imageRoutes);
 app.use('/api/leagues', leagueRoutes);
+app.use('/api/challenges',challengeRoutes)
+
+
 
 const port = process.env.PORT || 5000;
 app.listen(

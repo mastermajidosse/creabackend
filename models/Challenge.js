@@ -1,13 +1,10 @@
 import mongoose from 'mongoose';
 
-const seasonSchema = mongoose.Schema(
+const challengeSchema = mongoose.Schema(
   {
     theme: {
       type: String,
       required: true,
-    },
-    likesCount: {
-      type: Number,
     },
     league: {
       type: mongoose.Schema.Types.ObjectId,
@@ -19,12 +16,6 @@ const seasonSchema = mongoose.Schema(
       ref: 'Season',
       required: true,
     },
-    votes: [
-      {
-        user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-        winner: { type: Number, enum: [1, 2] }, // 1 for video1, 2 for video2
-      },
-    ],
     participants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   },
   {
@@ -32,6 +23,6 @@ const seasonSchema = mongoose.Schema(
   }
 );
 
-const Season = mongoose.model('Season', seasonSchema);
+const Challenge = mongoose.model('Challenge', challengeSchema);
 
-export default Season;
+export default Challenge;
