@@ -22,7 +22,7 @@ const getPosts = asyncHandler(async (req, res) => {
 // @route   POST /api/posts
 // @access  Private
 const createPost = asyncHandler(async (req, res) => {
-  const { videoUrl } = req.body;
+  const { videoUrl, challenge } = req.body;
   const userId = req.user._id;
   const competitor = await User.findById(userId);
   if (!competitor) {
@@ -36,6 +36,7 @@ const createPost = asyncHandler(async (req, res) => {
     league,
     status: 'waiting',
     creator1: { $ne: competitor._id },
+    challenge,
   });
 
   if (existingPost) {
@@ -51,8 +52,10 @@ const createPost = asyncHandler(async (req, res) => {
       league,
       creator1: competitor,
       video1: videoUrl,
+      challenge,
     });
     await newPost.populate('league').execPopulate();
+    await newPost.populate('Challenge').execPopulate();
     await newPost.save();
     return res.status(200).json(newPost);
   }
