@@ -19,6 +19,9 @@ const getChallengeById = async (req, res) => {
   }
 
   const challenge = await Challenge.findById(id);
+  if(!challenge) {
+    res.status(404).json({ message: `No challenge with id: ${id}` });
+  }
   res.status(200).json(challenge);
 };
 
