@@ -1,10 +1,12 @@
 import express from 'express';
 import {
+  assignLeagueToUser,
   deleteUser,
   getUserById,
   getUserProfile,
   getUsers,
   login,
+  makeUserCreator,
   register,
   updateUserProfile,
 } from '../controllers/userControllers.js';
@@ -21,8 +23,13 @@ router
   .get(protect, getUserProfile)
   .put(protect, updateUserProfile);
 
-router.route('/:id').delete(protect, admin, deleteUser)
-    .get(protect, getUserById)
+router
+  .route('/:id')
+  .delete(protect, admin, deleteUser)
+  .get(protect, getUserById);
 
+router.route('/create').put(protect, makeUserCreator);
+
+router.route('/:id/league').put(protect, admin, assignLeagueToUser);
 
 export default router;

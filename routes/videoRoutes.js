@@ -39,13 +39,6 @@ router.post(
         resource_type: 'video',
         public_id: filePathOnCloudinary,
         chunk_size: 6000000,
-        on: {
-          progress: (progress) => {
-            console.log(
-              `Bytes uploaded: ${progress.bytesUploaded}, Progress: ${progress.percent}%`
-            );
-          },
-        },
       })
       .then((result) => res.status(200).json({ url: result.url }))
       .catch((error) => res.status(401).json({ error: error }));

@@ -29,15 +29,18 @@ const createPost = asyncHandler(async (req, res) => {
   if (!competitor) {
     res.status(404).json({ message: 'The user does not exist' });
   }
-  if (competitor.currentLeague != null) {
-    res.status(401).json({ message: 'You do not belong to any league' });
+  if (competitor.currentLeague == null || competitor.isCreator == false) {
+    res.status(401).json({ message: 'You do not belong to any league and do not have the right to create videos' });
   }
+
+  
   const league = competitor.currentLeague;
   const existingPost = await Post.findOne({
     league,
     status: 'waiting',
     creator1: { $ne: competitor._id },
     challenge,
+    league,
   });
 
   const existingChallenge = await Challenge.findById(challenge);
@@ -59,8 +62,6 @@ const createPost = asyncHandler(async (req, res) => {
       video1: videoUrl,
       challenge,
     });
-    await newPost.populate('league').execPopulate();
-    await newPost.populate('Challenge').execPopulate();
     await newPost.save();
     return res.status(200).json(newPost);
   }

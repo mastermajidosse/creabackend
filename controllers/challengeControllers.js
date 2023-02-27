@@ -19,7 +19,7 @@ const getChallengeById = async (req, res) => {
   }
 
   const challenge = await Challenge.findById(id);
-  if(!challenge) {
+  if (!challenge) {
     res.status(404).json({ message: `No challenge with id: ${id}` });
   }
   res.status(200).json(challenge);
@@ -29,9 +29,18 @@ const getChallengeById = async (req, res) => {
 // @route   POST /api/challenges
 // @access  Private/admin
 const createChallenge = async (req, res) => {
-  const { theme, league, season } = req.body;
+  const { name, theme, league, season } = req.body;
+
+  const existingChallenge = await Challenge.findOne({ name });
+
+  if (existingChallenge) {
+    return res
+      .status(401)
+      .json({ message: 'Already existing Challenge with this name' });
+  }
 
   const newChallenge = new Challenge({
+    name,
     theme,
     league,
     season,
@@ -46,7 +55,7 @@ const createChallenge = async (req, res) => {
 // @access  Private/admin
 const updateChallengeById = async (req, res) => {
   const { id } = req.params;
-  const { theme, league, season } = req.body;
+  const { name, theme, league, season } = req.body;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(404).json({ message: `No challenge with id: ${id}` });
@@ -58,11 +67,12 @@ const updateChallengeById = async (req, res) => {
     res.status(404).json({ message: `No challenge with id: ${id}` });
   }
 
+  existingChallenge.name = name || existingChallenge.name;
   existingChallenge.league = league || existingChallenge.league;
   existingChallenge.theme = theme || existingChallenge.theme;
   existingChallenge.season = season || existingChallenge.season;
 
-  await existingChallenge.save()
+  await existingChallenge.save();
 
   res.status(201).json(existingChallenge);
 };
@@ -82,4 +92,10 @@ const deleteChallenge = async (req, res) => {
   res.json({ message: 'Challenge deleted successfully' });
 };
 
-export { getAllChallenges, getChallengeById, createChallenge, deleteChallenge,updateChallengeById };
+export {
+  getAllChallenges,
+  getChallengeById,
+  createChallenge,
+  deleteChallenge,
+  updateChallengeById,
+};

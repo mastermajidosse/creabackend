@@ -29,17 +29,14 @@ const createLeague = asyncHandler(async (req, res) => {
 // @desc    Fetch a league by Id
 // @route   POST /api/league/:id
 // @access  Public
-// @desc    Fetch all leagues
-// @route   GET /api/leagues
-// @access  Public
 const getLeagueById = asyncHandler(async (req, res) => {
   const { id } = req.params;
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(404).json({ message: `No challenge with id: ${id}` });
+    return res.status(404).json({ message: `No League with id: ${id}` });
   }
   const league = await League.findById(id);
   if (!league) {
-    res.status(404).json({ message: `No challenge with id: ${id}` });
+    res.status(404).json({ message: `No League with id: ${id}` });
   }
   res.status(200).json(league);
 });

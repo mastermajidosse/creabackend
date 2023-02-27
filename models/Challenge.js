@@ -2,6 +2,10 @@ import mongoose from 'mongoose';
 
 const challengeSchema = mongoose.Schema(
   {
+    name:{
+      type:String,
+      required:true
+    },
     theme: {
       type: String,
       required: true,

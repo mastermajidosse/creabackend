@@ -1,4 +1,5 @@
 import asyncHandler from 'express-async-handler';
+import mongoose from 'mongoose';
 import User from '../models/User.js';
 import generateToken from '../utils/generateToken.js';
 import { validateRegisterInput } from '../utils/validators.js';
@@ -211,6 +212,34 @@ const getUserById = asyncHandler(async (req, res) => {
   }
 });
 
+// @desc    Change a user to be creator
+// @route   PUT /api/users/create
+// @access  Private
+const makeUserCreator = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user.id);
+  user.isCreator = true;
+  await user.save();
+  return res.status(201).json({ message: 'You are a creator Now' });
+});
+// @desc    Assign a league to the user
+// @route   PUT /api/users/:id/league
+// @access  Private/Admin
+const assignLeagueToUser = asyncHandler(async (req, res) => {
+  const { league } = req.body;
+  const { id } = req.params;
+  if (
+    !mongoose.Types.ObjectId.isValid(id) ||
+    !mongoose.Types.ObjectId.isValid(league)
+  ) {
+    return res.status(404).json({ message: `Invalid ids` });
+  }
+  const user = await User.findById(id);
+  if (user.isCreator == false) user.isCreator = true;
+  user.currentLeague = league;
+  await user.save();
+  return res.status(201).json({ message: 'You are a creator Now' });
+});
+
 export {
   getUsers,
   login,
@@ -218,5 +247,7 @@ export {
   getUserProfile,
   updateUserProfile,
   deleteUser,
-  getUserById
+  getUserById,
+  makeUserCreator,
+  assignLeagueToUser,
 };
