@@ -2,19 +2,21 @@ import mongoose from 'mongoose';
 
 const challengeSchema = mongoose.Schema(
   {
-    name:{
-      type:String,
-      required:true
+    name: {
+      type: String,
+      required: true,
     },
     theme: {
       type: String,
       required: true,
     },
-    league: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'League',
-      required: true,
-    },
+    league: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'League',
+        required: true,
+      },
+    ],
     season: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Season',
