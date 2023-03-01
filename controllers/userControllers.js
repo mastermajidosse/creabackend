@@ -238,6 +238,65 @@ const assignLeagueToUser = asyncHandler(async (req, res) => {
   return res.status(201).json({ message: 'You are a creator Now' });
 });
 
+// @desc    follow a user
+// @route   PUT /api/users/follow/:userId
+// @access  Private
+const followUser = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+  const loggedInUserId = req.user.id;
+
+  const userToFollow = await User.findById(userId);
+  const loggedInUser = await User.findById(loggedInUserId);
+
+  if (!userToFollow || !loggedInUser) {
+    return res.status(404).send('User not found');
+  }
+
+  if (loggedInUser.following.includes(userId)) {
+    return res.status(400).send('Already following this user');
+  }
+
+  loggedInUser.following.push(userId);
+  userToFollow.followers.push(loggedInUserId);
+
+  await loggedInUser.save();
+  await userToFollow.save();
+
+  return res.send('User followed successfully');
+});
+
+// @desc    follow a user
+// @route   PUT /api/users/follow/:userId
+// @access  Private
+const unfollowUser = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+  const loggedInUserId = req.user.id;
+  console.log(userId)
+
+  const userToUnfollow = await User.findById(userId);
+  const loggedInUser = await User.findById(loggedInUserId);
+
+  if (!userToUnfollow || !loggedInUser) {
+    return res.status(404).send('User not found');
+  }
+
+  if (!loggedInUser.following.includes(userId)) {
+    return res.status(400).send('Not following this user');
+  }
+
+  loggedInUser.following = loggedInUser.following.filter(
+    (id) => id.toString() !== userId
+  );
+  userToUnfollow.followers = userToUnfollow.followers.filter(
+    (id) => id.toString() !== loggedInUserId
+  );
+
+  await loggedInUser.save();
+  await userToUnfollow.save();
+
+  return res.send('User unfollowed successfully');
+});
+
 export {
   getUsers,
   login,
@@ -248,4 +307,6 @@ export {
   getUserById,
   makeUserCreator,
   assignLeagueToUser,
+  followUser,
+  unfollowUser,
 };

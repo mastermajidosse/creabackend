@@ -2,12 +2,14 @@ import express from 'express';
 import {
   assignLeagueToUser,
   deleteUser,
+  followUser,
   getUserById,
   getUserProfile,
   getUsers,
   login,
   makeUserCreator,
   register,
+  unfollowUser,
   updateUserProfile,
 } from '../controllers/userControllers.js';
 import { admin, protect } from '../middlewares/authMiddleware.js';
@@ -31,5 +33,8 @@ router
 router.route('/create').put(protect, makeUserCreator);
 
 router.route('/:id/league').put(protect, admin, assignLeagueToUser);
+
+router.route('/follow/:userId').put(protect,followUser)
+router.route('/unfollow/:userId').put(protect, unfollowUser);
 
 export default router;
