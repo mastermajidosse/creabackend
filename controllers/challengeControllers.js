@@ -1,4 +1,5 @@
 import asyncHandler from 'express-async-handler';
+import mongoose from 'mongoose';
 import Challenge from '../models/Challenge.js';
 
 // @desc    Fetch all posts
@@ -38,7 +39,6 @@ const createChallenge = async (req, res) => {
       .status(401)
       .json({ message: 'Already existing Challenge with this name' });
   }
-
   const newChallenge = new Challenge({
     name,
     theme,

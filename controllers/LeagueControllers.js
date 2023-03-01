@@ -1,4 +1,5 @@
 import asyncHandler from 'express-async-handler';
+import mongoose from 'mongoose';
 import League from '../models/League.js';
 
 // @desc    Fetch all leagues
@@ -14,7 +15,6 @@ const getLeagues = asyncHandler(async (req, res) => {
 const createLeague = asyncHandler(async (req, res) => {
   const { nameLeague } = req.body;
   const existingLeague = await League.findOne({ name: nameLeague });
-  console.log(existingLeague);
   if (existingLeague) {
     return res
       .status(401)

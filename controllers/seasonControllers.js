@@ -1,4 +1,5 @@
 import asyncHandler from 'express-async-handler';
+import mongoose from 'mongoose';
 import Season from '../models/Season.js';
 
 // @desc    Fetch all seasons

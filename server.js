@@ -10,7 +10,9 @@ import postRoutes from './routes/postRoutes.js';
 import leagueRoutes from './routes/LeagueRoutes.js';
 import challengeRoutes from './routes/challengeRoutes.js';
 import seasonRoutes from './routes/seasonRoutes.js';
+
 const app = express();
+
 
 app.use(
   cors({

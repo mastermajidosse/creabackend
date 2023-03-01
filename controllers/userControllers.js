@@ -227,12 +227,10 @@ const makeUserCreator = asyncHandler(async (req, res) => {
 const assignLeagueToUser = asyncHandler(async (req, res) => {
   const { league } = req.body;
   const { id } = req.params;
-  if (
-    !mongoose.Types.ObjectId.isValid(id) ||
-    !mongoose.Types.ObjectId.isValid(league)
-  ) {
-    return res.status(404).json({ message: `Invalid ids` });
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(404).json({ message: `Invalid user Id` });
   }
+
   const user = await User.findById(id);
   if (user.isCreator == false) user.isCreator = true;
   user.currentLeague = league;
