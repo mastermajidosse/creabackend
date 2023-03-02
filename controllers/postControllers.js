@@ -71,6 +71,26 @@ const createPost = asyncHandler(async (req, res) => {
     return res.status(200).json(newPost);
   }
 });
+
+// @desc    Get a post by its Id
+// @route   Get /api/posts/:id
+// @access  Public
+const getPostById = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const post = await Post.findById(id)
+    .populate({
+      path: 'creator1',
+    })
+    .populate({
+      path: 'creator2',
+    });
+  if (post) {
+    res.status(200).json({ post, likesCount: post.likes.length });
+  } else {
+    res.status(404).json({ message: 'Post not found' });
+  }
+});
 // @desc    get a single new post
 // @route   POST /api/posts/new
 // @access  Public
@@ -92,7 +112,7 @@ const getNewPost = asyncHandler(async (req, res) => {
   if (!post) {
     return res.status(404).json({ message: 'No matching post found' });
   }
-  res.status(200).json(post);
+  res.status(200).json({ post, likesCount: post.likes.length });
 });
 
 // @desc    get user's posts
@@ -105,4 +125,35 @@ const getUserPosts = asyncHandler(async (req, res) => {
   });
   res.status(200).json(posts);
 });
-export { getPosts, createPost, getNewPost, getUserPosts };
+// @desc    Like a post
+// @route   POST /api/posts/:id/llike
+// @access  Private
+const likePost = asyncHandler(async (req, res) => {
+  const { postId } = req.params;
+  const userId = req.user.id;
+
+  const post = await Post.findById(postId);
+
+  if (!post) {
+    return res.status(404).send('Post not found');
+  }
+
+  if (post.likes.includes(userId)) {
+    return res.status(400).send('Post already liked');
+  }
+
+  post.likes.push(userId);
+
+  await post.save();
+
+  return res.send('Post liked successfully');
+});
+
+export {
+  getPosts,
+  createPost,
+  getNewPost,
+  getUserPosts,
+  likePost,
+  getPostById,
+};

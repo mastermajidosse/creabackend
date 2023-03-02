@@ -41,6 +41,7 @@ const postSchema = mongoose.Schema(
         winner: { type: Number, enum: [1, 2] }, // 1 for video1, 2 for video2
       },
     ],
+    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   },
   {
     timestamps: true,
