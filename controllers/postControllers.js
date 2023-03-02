@@ -105,7 +105,7 @@ const deletePost = asyncHandler(async (req, res) => {
   }
 
   if (!post) {
-    res.status(404).json({ message: 'Post not found' });
+    return res.status(404).json({ message: 'Post not found' });
   }
 
   if (
