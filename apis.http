@@ -111,6 +111,12 @@ put http://localhost:5000/api/posts/63fb6cce2442ba3bd427dfd6/toggleLike
 Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzZmU4ODIzODQxNWMwY2EyOGNmODM3MyIsImlhdCI6MTY3NzYyNTU2MywiZXhwIjoxNjgwMjE3NTYzfQ.BJZHNQoer9py_Fo8MsR6WhDQ9px8V8k-QWOwdpgoa7Y
 
+###
+#delete post
+DELETE  http://localhost:5000/api/posts/63fb6cce2442ba3bd427dfd6
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzZmU4ODIzODQxNWMwY2EyOGNmODM3MyIsImlhdCI6MTY3NzYyNTU2MywiZXhwIjoxNjgwMjE3NTYzfQ.BJZHNQoer9py_Fo8MsR6WhDQ9px8V8k-QWOwdpgoa7Y
+
 
 //Challenges section
 ###

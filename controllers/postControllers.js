@@ -91,6 +91,37 @@ const getPostById = asyncHandler(async (req, res) => {
     res.status(404).json({ message: 'Post not found' });
   }
 });
+
+// @desc    delete a post by its Id
+// @route   DELETE /api/posts/:id
+// @access  Private || Admin
+const deletePost = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const userId = req.user.id;
+  const post = await Post.findById(id);
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(404).json({ message: `No Post with id: ${id}` });
+  }
+
+  if (!post) {
+    res.status(404).json({ message: 'Post not found' });
+  }
+
+  if (
+    post.creator1.toString() !== userId &&
+    post.creator2.toString() !== userId &&
+    !req.user.isAdmin
+  ) {
+    return res
+      .status(403)
+      .json({ message: 'You are not authorized to delete this post' });
+  }
+
+  await post.remove();
+  res.status(201).json({ message: 'Post removed' });
+});
+
 // @desc    get a single new post
 // @route   POST /api/posts/new
 // @access  Public
@@ -160,4 +191,5 @@ export {
   getUserPosts,
   likePost,
   getPostById,
+  deletePost,
 };
