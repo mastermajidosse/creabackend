@@ -97,6 +97,10 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzZmU4ODIzO
     "challenge":"63fb6994e5f917879b4ced65"
 }
 
+###
+#get post by id
+get http://localhost:5000/api/posts/63fb6cce2442ba3bd427dfd6
+
 ### 
 #get user's posts
 get http://localhost:5000/api/posts/user/63f5112383ae218322dd60fd
