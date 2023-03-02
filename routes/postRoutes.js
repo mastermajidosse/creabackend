@@ -16,7 +16,7 @@ router.route('/new').get(getNewPost);
 router.route('/:id').get(getPostById)
 router.route('/user/:id').get(getUserPosts);
 
-router.route('/:postId/like').put(protect, likePost);
+router.route('/:postId/toggleLike').put(protect, likePost);
 
 //update and delete
 

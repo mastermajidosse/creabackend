@@ -86,7 +86,7 @@ const getPostById = asyncHandler(async (req, res) => {
       path: 'creator2',
     });
   if (post) {
-    res.status(200).json({ post, likesCount: post.likes.length });
+    res.status(200).json(post);
   } else {
     res.status(404).json({ message: 'Post not found' });
   }
@@ -112,7 +112,7 @@ const getNewPost = asyncHandler(async (req, res) => {
   if (!post) {
     return res.status(404).json({ message: 'No matching post found' });
   }
-  res.status(200).json({ post, likesCount: post.likes.length });
+  res.status(200).json(post);
 });
 
 // @desc    get user's posts
@@ -138,11 +138,17 @@ const likePost = asyncHandler(async (req, res) => {
     return res.status(404).send('Post not found');
   }
 
-  if (post.likes.includes(userId)) {
-    return res.status(400).send('Post already liked');
-  }
+  const alreadyLiked = post.likes.some(
+    (like) => like.user.toString() === userId
+  );
 
-  post.likes.push(userId);
+  if (alreadyLiked) {
+    post.likes = post.likes.filter((like) => like.user.toString() !== userId);
+    post.likesCount = post.likesCount - 1;
+  } else {
+    post.likes.push({ user: userId });
+    post.likesCount = post.likesCount + 1;
+  }
 
   await post.save();
 
