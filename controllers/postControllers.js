@@ -138,21 +138,19 @@ const likePost = asyncHandler(async (req, res) => {
     return res.status(404).send('Post not found');
   }
 
-  const alreadyLiked = post.likes.some(
-    (like) => like.user.toString() === userId
-  );
+  const alreadyLiked = post.likes.some((like) => like.toString() === userId);
 
   if (alreadyLiked) {
-    post.likes = post.likes.filter((like) => like.user.toString() !== userId);
+    post.likes = post.likes.filter((like) => like.toString() !== userId);
     post.likesCount = post.likesCount - 1;
+    await post.save();
+    return res.json({ message: 'Like removed successfully' });
   } else {
-    post.likes.push({ user: userId });
+    post.likes.push(userId);
     post.likesCount = post.likesCount + 1;
+    await post.save();
+    return res.json({ message: 'Like added successfully' });
   }
-
-  await post.save();
-
-  return res.send('Post liked successfully');
 });
 
 export {

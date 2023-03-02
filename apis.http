@@ -101,6 +101,13 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzZmU4ODIzO
 #get user's posts
 get http://localhost:5000/api/posts/user/63f5112383ae218322dd60fd
 
+###
+#like/removelike (from) post
+put http://localhost:5000/api/posts/63fb6cce2442ba3bd427dfd6/toggleLike
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzZmU4ODIzODQxNWMwY2EyOGNmODM3MyIsImlhdCI6MTY3NzYyNTU2MywiZXhwIjoxNjgwMjE3NTYzfQ.BJZHNQoer9py_Fo8MsR6WhDQ9px8V8k-QWOwdpgoa7Y
+
+
 //Challenges section
 ###
 #get all challenges
