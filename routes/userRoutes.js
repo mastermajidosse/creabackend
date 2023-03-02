@@ -34,7 +34,7 @@ router.route('/create').put(protect, makeUserCreator);
 
 router.route('/:id/league').put(protect, admin, assignLeagueToUser);
 
-router.route('/follow/:userId').put(protect,followUser)
+router.route('/follow/:userId').put(protect, followUser);
 router.route('/unfollow/:userId').put(protect, unfollowUser);
 
 export default router;

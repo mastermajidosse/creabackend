@@ -245,6 +245,12 @@ const followUser = asyncHandler(async (req, res) => {
   const { userId } = req.params;
   const loggedInUserId = req.user.id;
 
+  if (userId === loggedInUser) {
+    return res
+      .status(400)
+      .json({ message: 'you cannot unfollow or follow your self' });
+  }
+
   const userToFollow = await User.findById(userId);
   const loggedInUser = await User.findById(loggedInUserId);
 
@@ -271,7 +277,12 @@ const followUser = asyncHandler(async (req, res) => {
 const unfollowUser = asyncHandler(async (req, res) => {
   const { userId } = req.params;
   const loggedInUserId = req.user.id;
-  console.log(userId)
+
+  if (userId === loggedInUser) {
+    return res
+      .status(400)
+      .json({ message: 'you cannot unfollow or follow your self' });
+  }
 
   const userToUnfollow = await User.findById(userId);
   const loggedInUser = await User.findById(loggedInUserId);

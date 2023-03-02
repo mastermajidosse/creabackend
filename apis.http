@@ -70,13 +70,13 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzZmU4ODIzO
 
 ###
 #follow user
-put http://localhost:5000/api/users/follow/63fe88238415c0ca28cf8373
+put http://localhost:5000/api/users/follow/63f5112383ae218322dd60fd
 Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzZmU4ODIzODQxNWMwY2EyOGNmODM3MyIsImlhdCI6MTY3NzYyNTU2MywiZXhwIjoxNjgwMjE3NTYzfQ.BJZHNQoer9py_Fo8MsR6WhDQ9px8V8k-QWOwdpgoa7Y
 
 ###
 #unfollow user
-put http://localhost:5000/api/users/unfollow/63fe88238415c0ca28cf8373
+put http://localhost:5000/api/users/unfollow/63f5112383ae218322dd60fd
 Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzZmU4ODIzODQxNWMwY2EyOGNmODM3MyIsImlhdCI6MTY3NzYyNTU2MywiZXhwIjoxNjgwMjE3NTYzfQ.BJZHNQoer9py_Fo8MsR6WhDQ9px8V8k-QWOwdpgoa7Y
 
