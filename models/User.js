@@ -40,10 +40,7 @@ const userSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    likedPosts: {
-      type: [String],
-      default: [],
-    },
+    likedPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }],
     followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     wins: {
@@ -66,7 +63,7 @@ const userSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'League',
       default: null,
-    }
+    },
   },
   {
     timestamps: true,

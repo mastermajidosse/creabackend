@@ -176,13 +176,16 @@ const likePost = asyncHandler(async (req, res) => {
   if (alreadyLiked) {
     post.likes = post.likes.filter((like) => like.toString() !== userId);
     post.likeCount = post.likeCount - 1;
-    user.likedPosts
+    user.likedPosts.filter((post) => post.toString() !== postId)
     await post.save();
+    await user.save()
     return res.json({ message: 'Like removed successfully' });
   } else {
     post.likes.push(userId);
     post.likeCount = post.likeCount + 1;
+    user.likedPosts.push(post._id);
     await post.save();
+    await user.save()
     return res.json({ message: 'Like added successfully' });
   }
 });
