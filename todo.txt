@@ -1,0 +1,18 @@
+To-do:
+ -we need to check if the user could participate in a challenge (which means he is in the league of the challenge)
+ -display the convenient challenges for a user
+ -vote who is the winner
+ -check if the challenge is up , or end it if time exceeds
+ -when the challenge is done,update the list of winners and losers
+ -assign win,loss,draw to user profile and the ability to display it
+ -get the ranking of a user in a certain league
+ -update the user league based on his number of wins,draws and loses(which mean we should convert these into points )
+ and based on those points some users go to a higher league, other to a league less than the first and others stay on the same league
+ -get the ranking of leagues
+ -get league champion
+ -comment on a post
+ -populate comments with every post(commentor image-name-comment)
+ -the ability to like an comment
+ -which means we should be able to like a comment and populate those likes too
+ -getLikedPosts
+ -getUsersPosts that leads to a win - draw-loss

@@ -20,6 +20,8 @@ router.route('/user/:id').get(getUserPosts);
 
 router.route('/:postId/toggleLike').put(protect, likePost);
 
+router.route('/:postId/comment').put(protect)
+
 //update and delete
 
 export default router;

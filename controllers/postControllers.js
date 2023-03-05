@@ -163,6 +163,8 @@ const likePost = asyncHandler(async (req, res) => {
   const { postId } = req.params;
   const userId = req.user.id;
 
+  const user = await User.findById(userId)
+
   const post = await Post.findById(postId);
 
   if (!post) {
@@ -174,6 +176,7 @@ const likePost = asyncHandler(async (req, res) => {
   if (alreadyLiked) {
     post.likes = post.likes.filter((like) => like.toString() !== userId);
     post.likeCount = post.likeCount - 1;
+    user.likedPosts
     await post.save();
     return res.json({ message: 'Like removed successfully' });
   } else {
