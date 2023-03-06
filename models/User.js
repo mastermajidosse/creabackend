@@ -25,7 +25,8 @@ const userSchema = mongoose.Schema(
     },
     image: {
       type: String,
-      // required: true,
+      default:
+        'https://res.cloudinary.com/senyou/image/upload/v1660064603/wvjn3kfgqvjm8fdsufrw.jpg',
     },
     isAdmin: {
       type: Boolean,

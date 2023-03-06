@@ -1,13 +1,15 @@
 import express from 'express';
 import {
+  addComment,
   createPost,
   deletePost,
   getNewPost,
   getPostById,
   getPosts,
   getUserPosts,
+  likeComment,
   likePost,
-  
+  removeComment,
 } from '../controllers/postControllers.js';
 import { protect } from '../middlewares/authMiddleware.js';
 
@@ -20,7 +22,9 @@ router.route('/user/:id').get(getUserPosts);
 
 router.route('/:postId/toggleLike').put(protect, likePost);
 
-router.route('/:postId/comment').put(protect)
+router.route('/:postId/comment').put(protect, addComment);
+router.route('/:postId/comment/:commentId').delete(protect, removeComment);
+router.route('/:postId/comment/:commentId/like').put(protect, likeComment);
 
 //update and delete
 

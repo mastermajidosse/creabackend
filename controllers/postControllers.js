@@ -12,11 +12,13 @@ const getPosts = asyncHandler(async (req, res) => {
 
   let posts;
   if (leagueId) {
-    posts = await Post.find({ league: leagueId, status: 'done' }).populate(
-      'league'
-    );
+    posts = await Post.find({ league: leagueId, status: 'done' })
+      .populate('league')
+      .populate('comments.user', 'name image isAdmin');
   } else {
-    posts = await Post.find({ status: 'done' }).populate('league');
+    posts = await Post.find({ status: 'done' })
+      .populate('league')
+      .populate('comments.user', 'name image isAdmin');
   }
   res.status(200).json(posts);
 });
@@ -57,7 +59,10 @@ const createPost = asyncHandler(async (req, res) => {
     existingChallenge.participants.push(existingPost.creator1, competitor);
     await existingChallenge.save();
     await existingPost.save();
-    return res.status(200).json(existingPost);
+    return res
+      .status(200)
+      .json(existingPost)
+      .populate('comments.user', 'name image isAdmin');
   } else {
     // If there's no existing post, create a new one with creator1 and video1 fields
     const newPost = new Post({
@@ -68,7 +73,10 @@ const createPost = asyncHandler(async (req, res) => {
       challenge,
     });
     await newPost.save();
-    return res.status(200).json(newPost);
+    return res
+      .status(200)
+      .json(newPost)
+      .populate('comments.user', 'name image isAdmin');
   }
 });
 
@@ -86,7 +94,7 @@ const getPostById = asyncHandler(async (req, res) => {
       path: 'creator2',
     });
   if (post) {
-    res.status(200).json(post);
+    res.status(200).json(post).populate('comments.user', 'name image isAdmin');
   } else {
     res.status(404).json({ message: 'Post not found' });
   }
@@ -139,7 +147,8 @@ const getNewPost = asyncHandler(async (req, res) => {
   const post = await Post.findOne({ ...league })
     .skip(randomIndex)
     .populate('league')
-    .populate('challenge');
+    .populate('challenge')
+    .populate('comments.user', 'name image isAdmin');
   if (!post) {
     return res.status(404).json({ message: 'No matching post found' });
   }
@@ -154,7 +163,7 @@ const getUserPosts = asyncHandler(async (req, res) => {
   const posts = await Post.find({
     $or: [{ creator1: userId }, { creator2: userId }],
   });
-  res.status(200).json(posts);
+  res.status(200).json(posts).populate('comments.user', 'name image isAdmin');
 });
 // @desc    Like a post
 // @route   POST /api/posts/:id/llike
@@ -163,7 +172,7 @@ const likePost = asyncHandler(async (req, res) => {
   const { postId } = req.params;
   const userId = req.user.id;
 
-  const user = await User.findById(userId)
+  const user = await User.findById(userId);
 
   const post = await Post.findById(postId);
 
@@ -176,18 +185,108 @@ const likePost = asyncHandler(async (req, res) => {
   if (alreadyLiked) {
     post.likes = post.likes.filter((like) => like.toString() !== userId);
     post.likeCount = post.likeCount - 1;
-    user.likedPosts.filter((post) => post.toString() !== postId)
+    user.likedPosts.filter((post) => post.toString() !== postId);
     await post.save();
-    await user.save()
+    await user.save();
     return res.json({ message: 'Like removed successfully' });
   } else {
     post.likes.push(userId);
     post.likeCount = post.likeCount + 1;
     user.likedPosts.push(post._id);
     await post.save();
-    await user.save()
+    await user.save();
     return res.json({ message: 'Like added successfully' });
   }
+});
+
+// @desc    Add a comment to a post
+// @route   PUT /api/posts/:postId/comment
+// @access  Private
+const addComment = asyncHandler(async (req, res) => {
+  const { postId } = req.params;
+  const userId = req.user.id;
+  const { content } = req.body;
+
+  const post = await Post.findById(postId);
+
+  if (!post) {
+    return res.status(404).json({ message: 'Post not found' });
+  }
+
+  const comment = {
+    user: userId,
+    content,
+    likes: [],
+  };
+
+  post.comments.push(comment);
+  await post.save();
+
+  return res.json({ message: 'Comment added successfully' });
+});
+
+// @desc    Remove a comment from a post
+// @route   DELETE /api/posts/:id/comment/:commentId
+// @access  Private
+const removeComment = asyncHandler(async (req, res) => {
+  const { postId, commentId } = req.params;
+  const userId = req.user.id;
+
+  const post = await Post.findById(postId);
+
+  if (!post) {
+    return res.status(404).json({ message: 'Post not found' });
+  }
+
+  const comment = post.comments.find((c) => c._id.toString() === commentId);
+
+  if (!comment) {
+    return res.status(404).json({ message: 'Comment not found' });
+  }
+
+  // Check if the user is the owner of the comment or an admin
+  if (comment.user.toString() !== userId && req.user.isAdmin !== true) {
+    return res
+      .status(401)
+      .json({ message: 'Not authorized to remove this comment' });
+  }
+
+  post.comments = post.comments.filter((c) => c.id !== commentId);
+  await post.save();
+
+  return res.json({ message: 'Comment removed successfully' });
+});
+
+// @desc    Like a comment
+// @route   PUT /api/posts/:id/comment/:commentId/like
+// @access  Private
+const likeComment = asyncHandler(async (req, res) => {
+  const { postId, commentId } = req.params;
+  const userId = req.user.id;
+
+  const post = await Post.findById(postId);
+
+  if (!post) {
+    return res.status(404).json({ message: 'Post not found' });
+  }
+
+  const comment = post.comments.find((c) => c.id === commentId);
+
+  if (!comment) {
+    return res.status(404).json({ message: 'Comment not found' });
+  }
+
+  const alreadyLiked = comment.likes.some((like) => like.toString() === userId);
+
+  if (alreadyLiked) {
+    comment.likes = comment.likes.filter((like) => like.toString() !== userId);
+  } else {
+    comment.likes.push(userId);
+  }
+
+  await post.save();
+
+  return res.json({ message: "Comment's like toggled successfully" });
 });
 
 export {
@@ -198,4 +297,7 @@ export {
   likePost,
   getPostById,
   deletePost,
+  addComment,
+  removeComment,
+  likeComment,
 };

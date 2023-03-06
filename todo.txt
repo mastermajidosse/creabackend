@@ -10,9 +10,9 @@ To-do:
  and based on those points some users go to a higher league, other to a league less than the first and others stay on the same league
  -get the ranking of leagues
  -get league champion
- -comment on a post
- -populate comments with every post(commentor image-name-comment)
- -the ability to like an comment
+ -comment on a post:done
+ -populate comments with every post(commentor image-name-comment):done
+ -the ability to like an comment:done
  -which means we should be able to like a comment and populate those likes too
  -getLikedPosts
  -getUsersPosts that leads to a win - draw-loss
