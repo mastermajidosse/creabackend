@@ -10,7 +10,7 @@ const challengeSchema = mongoose.Schema(
       type: String,
       required: true,
     },
-    league: [
+    leagues: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'League',
@@ -23,6 +23,11 @@ const challengeSchema = mongoose.Schema(
       required: true,
     },
     participants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    deadline: { type: Date, required: true },
+    status: {
+      type: String,
+      enum: ['pending', 'done'],
+    },
   },
   {
     timestamps: true,

@@ -18,3 +18,7 @@ const leagueSChema = mongoose.Schema(
 const League = mongoose.model('League', leagueSChema);
 
 export default League;
+
+
+//need to modify this model
+//creators: [user,wins,loses,draws]

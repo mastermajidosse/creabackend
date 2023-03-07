@@ -28,43 +28,57 @@ const getPosts = asyncHandler(async (req, res) => {
 const createPost = asyncHandler(async (req, res) => {
   const { videoUrl, challenge } = req.body;
   const userId = req.user._id;
-  const competitor = await User.findById(userId);
+  const [competitor, existingChallenge] = await Promise.all([
+    User.findById(userId),
+    Challenge.findById(challenge),
+  ]);
   if (!competitor) {
-    res.status(404).json({ message: 'The user does not exist' });
+    return res.status(404).json({ message: 'The user does not exist' });
   }
-  if (competitor.currentLeague == null || competitor.isCreator == false) {
-    res.status(401).json({
-      message:
-        'You do not belong to any league and do not have the right to create videos',
-    });
+  if (!existingChallenge) {
+    return res.status(404).json({ message: 'No challenge Found' });
   }
-
+  const allowedLeagues = existingChallenge.leagues;
+  if (
+    !allowedLeagues.includes(competitor.currentLeague) ||
+    !competitor.isCreator || existingChallenge.status === 'done'//need to make sure that it is working
+  ) {
+    return res
+      .status(401)
+      .json({
+        message: 'You do not have permission to participate in this challenge',
+      });
+  }
   const league = competitor.currentLeague;
-  const existingPost = await Post.findOne({
-    league,
-    status: 'waiting',
-    creator1: { $ne: competitor._id },
-    challenge,
-    league,
-  });
-
-  const existingChallenge = await Challenge.findById(challenge);
-
+  const existingPost = await Post.findOneAndUpdate(
+    {
+      league,
+      status: 'waiting',
+      creator1: { $ne: competitor._id },
+      challenge,
+      league,
+    },
+    {
+      creator2: competitor,
+      video2: videoUrl,
+      thumbnail2: videoUrl.replace(/\.(mp4|avi|mov|wmv)$/i, '.jpg'),
+      status: 'done',
+    },
+    {
+      new: true,
+      upsert: false,
+    }
+  );
   if (existingPost) {
-    // If there's already a post in the league, add the user to the post
-    existingPost.creator2 = competitor;
-    existingPost.video2 = videoUrl;
-    existingPost.thumbnail2 = videoUrl.replace(/\.(mp4|avi|mov|wmv)$/i, '.jpg');
-    existingPost.status = 'done';
     existingChallenge.participants.push(existingPost.creator1, competitor);
-    await existingChallenge.save();
-    await existingPost.save();
+    const [savedChallenge, savedPost] = await Promise.all([
+      existingChallenge.save(),
+      existingPost.save(),
+    ]);
     return res
       .status(200)
-      .json(existingPost)
-      .populate('comments.user', 'name image isAdmin');
+      .json(await savedPost.populate('comments.user', 'name image isAdmin'));
   } else {
-    // If there's no existing post, create a new one with creator1 and video1 fields
     const newPost = new Post({
       league,
       creator1: competitor,
@@ -72,11 +86,8 @@ const createPost = asyncHandler(async (req, res) => {
       thumbnail1: videoUrl.replace(/\.(mp4|avi|mov|wmv)$/i, '.jpg'),
       challenge,
     });
-    await newPost.save();
-    return res
-      .status(200)
-      .json(newPost)
-      .populate('comments.user', 'name image isAdmin');
+    await Promise.all([existingChallenge.save(), newPost.save()]);
+    return res.status(200).json({ newPost });
   }
 });
 

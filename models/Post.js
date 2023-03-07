@@ -1,23 +1,22 @@
 import mongoose from 'mongoose';
 
-const commentSchema = mongoose
-  .Schema(
-    {
-      user: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true,
-        ref: 'User',
-      },
-      content: {
-        type: String,
-        required: true,
-      },
-      likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+const commentSchema = mongoose.Schema(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: 'User',
     },
-    {
-      timestamps: true,
-    }
-  )
+    content: {
+      type: String,
+      required: true,
+    },
+    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  },
+  {
+    timestamps: true,
+  }
+);
 
 const postSchema = mongoose.Schema(
   {
@@ -66,6 +65,12 @@ const postSchema = mongoose.Schema(
       default: 0,
     },
     comments: [commentSchema],
+    isDraw: {
+      type: Boolean,
+      default: false,
+    },
+    winner: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    loser: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   },
   {
     timestamps: true,
