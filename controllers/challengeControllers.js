@@ -1,6 +1,8 @@
 import asyncHandler from 'express-async-handler';
 import mongoose from 'mongoose';
 import Challenge from '../models/Challenge.js';
+import League from '../models/League.js';
+import Season from '../models/Season.js';
 
 // @desc    Fetch all posts
 // @route   GET /api/challenges
@@ -30,24 +32,47 @@ const getChallengeById = async (req, res) => {
 // @route   POST /api/challenges
 // @access  Private/admin
 const createChallenge = async (req, res) => {
-  const { name, theme, league, season } = req.body;
+  const { name, theme, league, season, deadline } = req.body;
 
-  const existingChallenge = await Challenge.findOne({ name });
+  const [existingLeague, existingChallenge, existingSeason] = await Promise.all(
+    [
+      League.findById(league),
+      Challenge.findOne({ name }),
+      Season.findById(season),
+    ]
+  );
+
+  if (!existingSeason) {
+    return res.status(404).json({ message: 'No season with this id' });
+  }
+
+  if (existingSeason.endDate < new Date()) {
+    return res.status(401).json({ message: 'The season is already expired' });
+  }
 
   if (existingChallenge) {
     return res
       .status(401)
       .json({ message: 'Already existing Challenge with this name' });
   }
+  if (deadline < new Date()) {
+    return res.status(401).json({ message: 'Invalid Deadline' });
+  }
+
   const newChallenge = new Challenge({
     name,
     theme,
     league,
     season,
+    deadline,
   });
+  existingLeague.challenges.push(newChallenge);
 
-  await newChallenge.save();
-  res.status(201).json(newChallenge);
+  const [savedChallenge, savedLeague] = await Promise.all([
+    newChallenge.save(),
+    existingLeague.save(),
+  ]);
+  res.status(201).json(savedChallenge);
 };
 
 // @desc    Update a challenge by its id

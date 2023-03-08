@@ -10,6 +10,7 @@ import {
   likeComment,
   likePost,
   removeComment,
+  vote,
 } from '../controllers/postControllers.js';
 import { protect } from '../middlewares/authMiddleware.js';
 
@@ -25,6 +26,8 @@ router.route('/:postId/toggleLike').put(protect, likePost);
 router.route('/:postId/comment').put(protect, addComment);
 router.route('/:postId/comment/:commentId').delete(protect, removeComment);
 router.route('/:postId/comment/:commentId/like').put(protect, likeComment);
+
+router.route('/:postId/vote/:winner').put(protect,vote);
 
 //update and delete
 

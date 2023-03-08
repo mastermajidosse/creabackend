@@ -10,13 +10,11 @@ const challengeSchema = mongoose.Schema(
       type: String,
       required: true,
     },
-    leagues: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'League',
-        required: true,
-      },
-    ],
+    league: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'League',
+      required: true,
+    },
     season: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Season',

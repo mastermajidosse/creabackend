@@ -7,7 +7,14 @@ const leagueSChema = mongoose.Schema(
       required: true,
       unique: true,
     },
-    creators: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    creators: [
+      {
+        user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        wins: { type: Number, default: 0 },
+        losses: { type: Number, default: 0 },
+        draws: { type: Number, default: 0 },
+      },
+    ],
     challenges: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Challenge' }],
   },
   {
@@ -18,7 +25,6 @@ const leagueSChema = mongoose.Schema(
 const League = mongoose.model('League', leagueSChema);
 
 export default League;
-
 
 //need to modify this model
 //creators: [user,wins,loses,draws]

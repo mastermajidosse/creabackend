@@ -41,13 +41,12 @@ const createPost = asyncHandler(async (req, res) => {
   const allowedLeagues = existingChallenge.leagues;
   if (
     !allowedLeagues.includes(competitor.currentLeague) ||
-    !competitor.isCreator || existingChallenge.status === 'done'//need to make sure that it is working
+    !competitor.isCreator ||
+    existingChallenge.status === 'done' //need to make sure that it is working
   ) {
-    return res
-      .status(401)
-      .json({
-        message: 'You do not have permission to participate in this challenge',
-      });
+    return res.status(401).json({
+      message: 'You do not have permission to participate in this challenge',
+    });
   }
   const league = competitor.currentLeague;
   const existingPost = await Post.findOneAndUpdate(
@@ -300,6 +299,50 @@ const likeComment = asyncHandler(async (req, res) => {
   return res.json({ message: "Comment's like toggled successfully" });
 });
 
+// @desc    vote on a post
+// @route   POST /api/posts/:postId/vote/:winner
+// @access  Private
+const vote = asyncHandler(async (req, res) => {
+  const { postId, winner } = req.params;
+  const userId = req.user.id;
+
+  if (!mongoose.Types.ObjectId.isValid(postId)) {
+    return res.status(404).json({ message: `No Post with id: ${postId}` });
+  }
+
+  const post = await Post.findById(postId);
+
+  if (!post) {
+    return res.status(404).json({ message: `No Post with id: ${postId}` });
+  }
+
+  if (post.status !== 'done') {
+    return res
+      .status(401)
+      .json({ message: 'You cannot vote on a post with only one user' });
+  }
+
+  const challenge = await Challenge.findById(post.challenge);
+
+  if (!challenge || challenge.status === 'done') {
+    return res
+      .status(401)
+      .json({ message: 'You are not authorized to vote on this challenge' });
+  }
+
+  const existingVote = post.votes.find(
+    (vote) => vote.user.toString() === userId
+  );
+
+  if (existingVote) {
+    existingVote.winner = winner;
+  } else {
+    post.votes.push({ user: userId, winner });
+  }
+  await post.save()
+  return res.status(201).json({message:"voted with success"})
+});
+
 export {
   getPosts,
   createPost,
@@ -311,4 +354,5 @@ export {
   addComment,
   removeComment,
   likeComment,
+  vote,
 };
