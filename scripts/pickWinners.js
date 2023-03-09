@@ -2,26 +2,27 @@ import cron from 'node-cron';
 import Challenge from '../models/Challenge.js';
 import Post from '../models/Post.js';
 import League from '../models/League.js';
+import User from '../models/User.js';
 
 export const cronJob = cron.schedule('* * * * *', async () => {
   console.log('Running script every minute');
   const expiredChallenges = await Challenge.find({
     deadline: { $lt: new Date() },
-    status: 'done',
+    status: 'pending',
   });
-
-  console.log(expiredChallenges)
 
   for (const challenge of expiredChallenges) {
     const posts = await Post.find({
       challenge: challenge._id,
       status: 'done',
     });
-    console.log(posts)
 
     for (const post of posts) {
+      const [creator1, creator2] = await Promise.all([
+        await User.findById(post.creator1),
+        await User.findById(post.creator2),
+      ]);
       const votes = post.votes;
-      console.log(votes)
       let countUser1 = 0;
       let countUser2 = 0;
 
@@ -33,44 +34,34 @@ export const cronJob = cron.schedule('* * * * *', async () => {
         }
       }
 
-      let winner, loser;
       if (countUser1 > countUser2) {
-        winner = post.creator1;
-        loser = post.creator2;
+        post.winner = post.creator1;
+        post.loser = post.creator2;
+        creator1.wins++;
+        creator2.loses++;
       } else if (countUser2 > countUser1) {
-        winner = post.creator2;
-        loser = post.creator1;
+        post.winner = post.creator2;
+        post.loser = post.creator1;
+        creator2.wins++;
+        creator1.loses++;
       } else {
-        winner = null;
-        loser = null;
+        post.winner = null;
+        post.loser = null;
+        post.isDraw = true;
+        creator1.draws++;
+        creator2.draws++;
       }
 
-      if (winner) {
-        await League.findOneAndUpdate(
-          { creators: winner },
-          { $inc: { 'creators.$.wins': 1 } }
-        );
-
-        await League.findOneAndUpdate(
-          { creators: loser },
-          { $inc: { 'creators.$.losses': 1 } }
-        );
-      } else {
-        await League.findOneAndUpdate(
-          { creators: post.creator1 },
-          { $inc: { 'creators.$.draws': 1 } }
-        );
-
-        await League.findOneAndUpdate(
-          { creators: post.creator2 },
-          { $inc: { 'creators.$.draws': 1 } }
-        );
-      }
+      const [savedPost, savedCreator1, savedCreator2] = await Promise.all([
+        post.save(),
+        creator1.save(),
+        creator2.save(),
+      ]);
     }
 
     await Challenge.updateOne(
       { _id: challenge._id },
-      { $set: { status: 'expired' } }
+      { $set: { status: 'done' } }
     );
   }
 });

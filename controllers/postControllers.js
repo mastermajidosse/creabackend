@@ -38,9 +38,10 @@ const createPost = asyncHandler(async (req, res) => {
   if (!existingChallenge) {
     return res.status(404).json({ message: 'No challenge Found' });
   }
-  const allowedLeagues = existingChallenge.leagues;
+  const allowedLeague = existingChallenge.league;
+  const league = competitor.currentLeague;
   if (
-    !allowedLeagues.includes(competitor.currentLeague) ||
+    allowedLeague.toString() !== league.toString() ||
     !competitor.isCreator ||
     existingChallenge.status === 'done' //need to make sure that it is working
   ) {
@@ -48,7 +49,6 @@ const createPost = asyncHandler(async (req, res) => {
       message: 'You do not have permission to participate in this challenge',
     });
   }
-  const league = competitor.currentLeague;
   const existingPost = await Post.findOneAndUpdate(
     {
       league,
@@ -339,8 +339,21 @@ const vote = asyncHandler(async (req, res) => {
   } else {
     post.votes.push({ user: userId, winner });
   }
-  await post.save()
-  return res.status(201).json({message:"voted with success"})
+  await post.save();
+  return res.status(201).json({ message: 'voted with success' });
+});
+
+// @desc    get wins of a user
+// @route   POST /api/posts/wins/:userId
+// @access  Public
+const getWinPosts = asyncHandler(async (req, res) => {
+  const userId = req.params.id;
+  const posts = await Post.find({
+    $or: [{ creator1: userId }, { creator2: userId }],
+    winner: userId,
+    status: 'done',
+  });
+  res.status(200).json(posts);
 });
 
 export {
@@ -355,4 +368,5 @@ export {
   removeComment,
   likeComment,
   vote,
+  getWinPosts,
 };

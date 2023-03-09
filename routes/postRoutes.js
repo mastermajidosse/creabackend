@@ -7,6 +7,7 @@ import {
   getPostById,
   getPosts,
   getUserPosts,
+  getWinPosts,
   likeComment,
   likePost,
   removeComment,
@@ -27,8 +28,9 @@ router.route('/:postId/comment').put(protect, addComment);
 router.route('/:postId/comment/:commentId').delete(protect, removeComment);
 router.route('/:postId/comment/:commentId/like').put(protect, likeComment);
 
-router.route('/:postId/vote/:winner').put(protect,vote);
+router.route('/:postId/vote/:winner').put(protect, vote);
 
-//update and delete
-
+router.route('/wins/:userId').get();
+router.route('/draws/:userId').get();
+router.route('/losses/:userId').get();
 export default router;

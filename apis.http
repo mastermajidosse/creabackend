@@ -64,9 +64,8 @@ Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzZmU4ODIzODQxNWMwY2EyOGNmODM3MyIsImlhdCI6MTY3NzYyNTU2MywiZXhwIjoxNjgwMjE3NTYzfQ.BJZHNQoer9py_Fo8MsR6WhDQ9px8V8k-QWOwdpgoa7Y
 
 {
-    "league":"63f7889806a9ae82c6d2ab80",
-    "name":"younes"
-}
+    "league":"63f7889806a9ae82c6d2ab80"
+    }
 
 ###
 #follow user

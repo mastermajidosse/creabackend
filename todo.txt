@@ -1,8 +1,5 @@
 To-do:
- -check if the challenge is up , or end it if time exceeds:in progress ==> needs to be tested after implementing the necessary functions
- -when the challenge is done,update the list of winners and losers:in progress
- -vote who is the winner:in progress
- -assign win,loss,draw to user profile and the ability to display it:in progress
+ -getUsersPosts that leads to a win-draw-loss:in progress
  -organizing things to match each other better:in progress
  -display the convenient challenges for a user
  -get the ranking of a user in a certain league
@@ -11,9 +8,12 @@ To-do:
  -get the ranking of leagues
  -get league champion
  -getLikedPosts
- -getUsersPosts that leads to a win-draw-loss
  -update and delete a post(need to ask about the process)
  ==========================================================================================================
+ -check if the challenge is up , or end it if time exceeds using cron jobs but I need to know the period:done
+ -when the challenge is done,update the list of winners and losers:done
+ -vote who is the winner:done
+ -assign win,loss,draw to user profile and the ability to display it:done
  -createPost function is very big,we need to optimize it the most : done
  -we need to check if the user could participate in a challenge (which means he is in the league of the challenge):done
  -comment on a post:done
