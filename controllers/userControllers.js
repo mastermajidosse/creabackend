@@ -1,5 +1,6 @@
 import asyncHandler from 'express-async-handler';
 import mongoose from 'mongoose';
+import League from '../models/League.js';
 import User from '../models/User.js';
 import generateToken from '../utils/generateToken.js';
 import { validateRegisterInput } from '../utils/validators.js';
@@ -230,11 +231,27 @@ const assignLeagueToUser = asyncHandler(async (req, res) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(404).json({ message: `Invalid user Id` });
   }
+  const [user, existingLeague] = await Promise.all([
+    User.findById(id),
+    League.findById(league),
+  ]);
 
-  const user = await User.findById(id);
   if (user.isCreator == false) user.isCreator = true;
+  const creatorExists = existingLeague.creators.find(
+    (creator) => creator.user.toString() === id
+  );
+
+  if (!creatorExists) {
+    existingLeague.creators.push({
+      user: id,
+      wins: 0,
+      losses: 0,
+      draws: 0,
+      numberOfGames: 0,
+    });
+  }
   user.currentLeague = league;
-  await user.save();
+  await Promise.all([user.save(), existingLeague.save()]);
   return res.status(201).json({ message: 'You are a creator Now' });
 });
 
@@ -308,6 +325,19 @@ const unfollowUser = asyncHandler(async (req, res) => {
   return res.send('User unfollowed successfully');
 });
 
+// @desc    Get a user's liked posts by ID
+// @route   GET /api/users/:id/likedosts
+// @access  Public
+const getLikedPosts = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user.id);
+
+  if (user) {
+    res.status(200).json(user.likedPosts);
+  } else {
+    res.status(404).json({ message: 'User not found' });
+  }
+});
+
 export {
   getUsers,
   login,
@@ -320,4 +350,5 @@ export {
   assignLeagueToUser,
   followUser,
   unfollowUser,
+  getLikedPosts,
 };

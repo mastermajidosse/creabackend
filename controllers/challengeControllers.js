@@ -2,7 +2,7 @@ import asyncHandler from 'express-async-handler';
 import mongoose from 'mongoose';
 import Challenge from '../models/Challenge.js';
 import League from '../models/League.js';
-import Season from '../models/Season.js';
+import User from '../models/User.js';
 
 // @desc    Fetch all posts
 // @route   GET /api/challenges
@@ -32,23 +32,15 @@ const getChallengeById = async (req, res) => {
 // @route   POST /api/challenges
 // @access  Private/admin
 const createChallenge = async (req, res) => {
-  const { name, theme, league, season, deadline } = req.body;
+  const { name, theme, league, deadline } = req.body;
 
-  const [existingLeague, existingChallenge, existingSeason] = await Promise.all(
+  const [existingLeague, existingChallenge] = await Promise.all(
     [
       League.findById(league),
       Challenge.findOne({ name }),
-      Season.findById(season),
     ]
   );
 
-  if (!existingSeason) {
-    return res.status(404).json({ message: 'No season with this id' });
-  }
-
-  if (existingSeason.endDate < new Date()) {
-    return res.status(401).json({ message: 'The season is already expired' });
-  }
 
   if (existingChallenge) {
     return res
@@ -63,7 +55,6 @@ const createChallenge = async (req, res) => {
     name,
     theme,
     league,
-    season,
     deadline,
   });
   existingLeague.challenges.push(newChallenge);
@@ -80,7 +71,7 @@ const createChallenge = async (req, res) => {
 // @access  Private/admin
 const updateChallengeById = async (req, res) => {
   const { id } = req.params;
-  const { name, theme, league, season } = req.body;
+  const { name, theme, league } = req.body;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(404).json({ message: `No challenge with id: ${id}` });
@@ -95,7 +86,6 @@ const updateChallengeById = async (req, res) => {
   existingChallenge.name = name || existingChallenge.name;
   existingChallenge.league = league || existingChallenge.league;
   existingChallenge.theme = theme || existingChallenge.theme;
-  existingChallenge.season = season || existingChallenge.season;
 
   await existingChallenge.save();
 
@@ -117,10 +107,28 @@ const deleteChallenge = async (req, res) => {
   res.json({ message: 'Challenge deleted successfully' });
 };
 
+// @desc    Get Convinient Challenges for a user
+// @route   GET /api/challenges/user
+// @access  Private
+const getChallengesForUser = asyncHandler(async(req,res) => {
+  const userId = req.user.id
+  const user = await User.findById(userId)
+  if(!user) return res.status(404).json({message:"No user found with this Id"})
+
+  const challenges = await Challenge.find({
+    league: user.currentLeague,
+    deadline: { $gt: new Date() },
+  });
+
+  res.status(200).json({challenges})
+
+})
+
 export {
   getAllChallenges,
   getChallengeById,
   createChallenge,
   deleteChallenge,
   updateChallengeById,
+  getChallengesForUser
 };

@@ -25,6 +25,14 @@ const getPosts = asyncHandler(async (req, res) => {
 // @desc    create a post
 // @route   POST /api/posts
 // @access  Private
+/*
+this function first checks if the user and the challenge exist, 
+then checks if the user has played more than 10 games in the league. 
+If the user is allowed to participate in the challenge, the function
+ either updates an existing post or creates a new post. Finally, 
+ the function updates the challenge and the post and returns the 
+ updated or new
+*/
 const createPost = asyncHandler(async (req, res) => {
   const { videoUrl, challenge } = req.body;
   const userId = req.user._id;
@@ -38,6 +46,15 @@ const createPost = asyncHandler(async (req, res) => {
   if (!existingChallenge) {
     return res.status(404).json({ message: 'No challenge Found' });
   }
+  // Check if the user has played less than 10 games
+  const creatorInfo = league.creators.find(
+    (creator) => creator.user.toString() === userId
+  );
+  if (creatorInfo && creatorInfo.numberOfGames >= 10) {
+    return res.status(401).json({
+      message: 'You have played more than 10 games in this league',
+    });
+  }
   const allowedLeague = existingChallenge.league;
   const league = competitor.currentLeague;
   if (
@@ -49,6 +66,7 @@ const createPost = asyncHandler(async (req, res) => {
       message: 'You do not have permission to participate in this challenge',
     });
   }
+
   const existingPost = await Post.findOneAndUpdate(
     {
       league,
@@ -347,10 +365,35 @@ const vote = asyncHandler(async (req, res) => {
 // @route   POST /api/posts/wins/:userId
 // @access  Public
 const getWinPosts = asyncHandler(async (req, res) => {
-  const userId = req.params.id;
+  const { userId } = req.params;
   const posts = await Post.find({
     $or: [{ creator1: userId }, { creator2: userId }],
     winner: userId,
+    status: 'done',
+  });
+  res.status(200).json(posts);
+});
+
+// @desc    get loses of a user
+// @route   POST /api/posts/losses/:userId
+// @access  Public
+const getLosePosts = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+  const posts = await Post.find({
+    $or: [{ creator1: userId }, { creator2: userId }],
+    loser: userId,
+    status: 'done',
+  });
+  res.status(200).json(posts);
+});
+// @desc    get draws of a user
+// @route   POST /api/posts/draws/:userId
+// @access  Public
+const getDrawsPosts = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+  const posts = await Post.find({
+    $or: [{ creator1: userId }, { creator2: userId }],
+    isDraw: true,
     status: 'done',
   });
   res.status(200).json(posts);
@@ -369,4 +412,6 @@ export {
   likeComment,
   vote,
   getWinPosts,
+  getLosePosts,
+  getDrawsPosts,
 };

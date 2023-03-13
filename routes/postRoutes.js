@@ -3,6 +3,8 @@ import {
   addComment,
   createPost,
   deletePost,
+  getDrawsPosts,
+  getLosePosts,
   getNewPost,
   getPostById,
   getPosts,
@@ -30,7 +32,9 @@ router.route('/:postId/comment/:commentId/like').put(protect, likeComment);
 
 router.route('/:postId/vote/:winner').put(protect, vote);
 
-router.route('/wins/:userId').get();
-router.route('/draws/:userId').get();
-router.route('/losses/:userId').get();
+router.route('/wins/:userId').get(getWinPosts);
+router.route('/losses/:userId').get(getLosePosts);
+router.route('/draws/:userId').get(getDrawsPosts);
+
+
 export default router;

@@ -13,9 +13,20 @@ const leagueSChema = mongoose.Schema(
         wins: { type: Number, default: 0 },
         losses: { type: Number, default: 0 },
         draws: { type: Number, default: 0 },
+        numberOfGames: { type: Number, default: 0 },
       },
     ],
     challenges: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Challenge' }],
+    nextLeague: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'League',
+      default: null,
+    },
+    prevLeague: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'League',
+      default: null,
+    },
   },
   {
     timestamps: true,

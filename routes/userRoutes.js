@@ -3,6 +3,7 @@ import {
   assignLeagueToUser,
   deleteUser,
   followUser,
+  getLikedPosts,
   getUserById,
   getUserProfile,
   getUsers,
@@ -26,11 +27,16 @@ router
   .put(protect, updateUserProfile);
 
 router
+  .route('/likedposts')
+  .get(protect,getLikedPosts)
+
+router
   .route('/:id')
   .delete(protect, admin, deleteUser)
   .get(protect, getUserById);
 
 router.route('/create').put(protect, makeUserCreator);
+
 
 router.route('/:id/league').put(protect, admin, assignLeagueToUser);
 

@@ -40,5 +40,23 @@ const getLeagueById = asyncHandler(async (req, res) => {
   }
   res.status(200).json(league);
 });
+// @desc    Assign next and prev leagues for a league by Id
+// @route   POST /api/league/:id/assign
+// @access  Private/Admin
+const assignLeagues = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { nextLeague, prevLeague } = req.body;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(404).json({ message: `No League with id: ${id}` });
+  }
+  const league = await League.findById(id);
+  if (!league) {
+    res.status(404).json({ message: `No League with id: ${id}` });
+  }
+  league.nextLeague = nextLeague;
+  league.prevLeague = prevLeague;
+  await league.save();
+  res.status(201).json({ message: 'Leagues assigned with success' });
+});
 
-export { getLeagues, createLeague,getLeagueById };
+export { getLeagues, createLeague, getLeagueById, assignLeagues };

@@ -15,11 +15,6 @@ const challengeSchema = mongoose.Schema(
       ref: 'League',
       required: true,
     },
-    season: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Season',
-      required: true,
-    },
     participants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     deadline: { type: Date, required: true },
     status: {

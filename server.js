@@ -9,7 +9,6 @@ import imageRoutes from './routes/imageRoutes.js';
 import postRoutes from './routes/postRoutes.js';
 import leagueRoutes from './routes/LeagueRoutes.js';
 import challengeRoutes from './routes/challengeRoutes.js';
-import seasonRoutes from './routes/seasonRoutes.js';
 import { cronJob } from './scripts/pickWinners.js';
 
 const app = express();
@@ -41,7 +40,6 @@ app.use('/api/videos', videoRoutes);
 app.use('/api/images', imageRoutes);
 app.use('/api/leagues', leagueRoutes);
 app.use('/api/challenges', challengeRoutes);
-app.use('/api/seasons', seasonRoutes);
 
 const port = process.env.PORT || 5000;
 app.listen(

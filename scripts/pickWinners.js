@@ -10,12 +10,14 @@ export const cronJob = cron.schedule('* * * * *', async () => {
     deadline: { $lt: new Date() },
     status: 'pending',
   });
+  console.log(expiredChallenges);
 
   for (const challenge of expiredChallenges) {
     const posts = await Post.find({
       challenge: challenge._id,
       status: 'done',
     });
+    console.log(posts);
 
     for (const post of posts) {
       const [creator1, creator2] = await Promise.all([
@@ -33,7 +35,8 @@ export const cronJob = cron.schedule('* * * * *', async () => {
           countUser2++;
         }
       }
-
+      console.log(countUser1);
+      console.log(countUser2);
       if (countUser1 > countUser2) {
         post.winner = post.creator1;
         post.loser = post.creator2;
