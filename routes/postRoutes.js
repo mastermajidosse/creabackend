@@ -1,68 +1,40 @@
 import express from 'express';
 import {
-	getPosts,
-	createPost,
-	getPostById,
-	editPostById,
-	deletePost,
-	likePost,
-	reportPost,
-	getReports,
-	deleteReport,
-	getPostsByUserId,
-	editNews,
-	deleteNews,
-	getNews,
-	addNews,
-	approvePost,
-	switchTop3,
-	translatePost,
-	createComment,
-	updateComment,
-	deleteComment,
+  addComment,
+  createPost,
+  deletePost,
+  getDrawsPosts,
+  getLosePosts,
+  getNewPost,
+  getPostById,
+  getPosts,
+  getUserPosts,
+  getWinPosts,
+  likeComment,
+  likePost,
+  removeComment,
+  vote,
 } from '../controllers/postControllers.js';
-import { protect, admin } from '../middlewares/authMiddleware.js';
+import { protect } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
 router.route('/').get(getPosts).post(protect, createPost);
+router.route('/new').get(getNewPost);
+router.route('/:id').get(getPostById).delete(protect, deletePost);
+router.route('/user/:id').get(getUserPosts);
 
-router
-	.route('/:id')
-	.get(getPostById)
-	.post(protect, editPostById)
-	.delete(protect, deletePost);
+router.route('/:postId/toggleLike').put(protect, likePost);
 
-router.route('/user/:id').get(getPostsByUserId);
+router.route('/:postId/comment').put(protect, addComment);
+router.route('/:postId/comment/:commentId').delete(protect, removeComment);
+router.route('/:postId/comment/:commentId/like').put(protect, likeComment);
 
-router.route('/:id/like').post(protect, likePost);
+router.route('/:postId/vote/:winner').put(protect, vote);
 
-// comment routes
-router.route('/:id/comment').post(protect, createComment);
-router
-	.route('/:id/comment/:comment_id')
-	.patch(protect, updateComment)
-	.delete(protect, deleteComment);
+router.route('/wins/:userId').get(getWinPosts);
+router.route('/losses/:userId').get(getLosePosts);
+router.route('/draws/:userId').get(getDrawsPosts);
 
-// report routes
-router
-	.route('/:id/report')
-	.post(protect, reportPost)
-	.get(protect, admin, getReports);
-
-router.route('/:id/report/:report_id').delete(protect, admin, deleteReport);
-
-router.route('/:id/translate').post(protect, admin, translatePost);
-
-router.route('/:id/update').post(protect, addNews).get(protect, getNews);
-
-router
-	.route('/:id/update/:update_id')
-	.post(protect, editNews)
-	.delete(protect, deleteNews);
-
-router.route('/:id/approve').post(protect, admin, approvePost);
-
-router.route('/:id/top3').post(protect, admin, switchTop3);
 
 export default router;

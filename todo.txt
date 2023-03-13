@@ -1,0 +1,30 @@
+To-do:
+ -organizing things to match each other better:in progress
+ -connect seasons to other models:in progress
+ -get the ranking of a user in a certain league
+ -update the user league based on his number of wins,draws and loses(which mean we should convert these into points )
+ and based on those points some users go to a higher league, other to a league less than the first and others stay on the same league:in progress
+ -upgrade users and downgrade them using a script:in progress
+ -get the ranking of leagues
+ -get league champion
+ -delete a post(need to ask about the process)//will be calculated as a loss
+ ==========================================================================================================
+ -add creators to a league:done
+ -getLikedPosts:done
+ -display the convenient challenges for a user:done
+ -getUsersPosts that leads to a win-draw-loss:done
+ -check if the challenge is up , or end it if time exceeds using cron jobs but I need to know the period:done
+ -when the challenge is done,update the list of winners and losers:done
+ -vote who is the winner:done
+ -assign win,loss,draw to user profile and the ability to display it:done
+ -createPost function is very big,we need to optimize it the most : done
+ -we need to check if the user could participate in a challenge (which means he is in the league of the challenge):done
+ -comment on a post:done
+ -the hieararchy of leagues:done
+ -performance of uploading videos
+ -populate comments with every post(commentor image-name-comment):done
+ -the ability to like an comment which means we should be able to like a comment and populate those likes too:done
+
+
+
+ N.b:Many tasks are in progress because they are very related to each other

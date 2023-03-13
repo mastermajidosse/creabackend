@@ -1,477 +1,417 @@
 import asyncHandler from 'express-async-handler';
+import mongoose from 'mongoose';
+import Challenge from '../models/Challenge.js';
 import Post from '../models/Post.js';
 import User from '../models/User.js';
 
 // @desc    Fetch all posts
-// @route   GET /api/posts?status=status
+// @route   GET /api/posts?league=league
 // @access  Public
 const getPosts = asyncHandler(async (req, res) => {
-	const status = req.query.status
-		? {
-			status: {
-				$regex: req.query.status,
-				$options: 'i',
-			},
-		}
-		: {};
-	const posts = await Post.find({ ...status })
-		.sort({ createdAt: -1 })
-		.populate({
-			path: 'category',
-			select: '-updatedAt -createdAt -_id -__v',
-		});
-	res.status(200).json(posts);
+  const leagueId = req.query.league;
+
+  let posts;
+  if (leagueId) {
+    posts = await Post.find({ league: leagueId, status: 'done' })
+      .populate('league')
+      .populate('comments.user', 'name image isAdmin');
+  } else {
+    posts = await Post.find({ status: 'done' })
+      .populate('league')
+      .populate('comments.user', 'name image isAdmin');
+  }
+  res.status(200).json(posts);
 });
 // @desc    create a post
 // @route   POST /api/posts
 // @access  Private
+/*
+this function first checks if the user and the challenge exist, 
+then checks if the user has played more than 10 games in the league. 
+If the user is allowed to participate in the challenge, the function
+ either updates an existing post or creates a new post. Finally, 
+ the function updates the challenge and the post and returns the 
+ updated or new
+*/
 const createPost = asyncHandler(async (req, res) => {
-	const { lang, title, desc, category, price, deadline, images, link } =
-		req.body;
-	const user = req.user._id;
+  const { videoUrl, challenge } = req.body;
+  const userId = req.user._id;
+  const [competitor, existingChallenge] = await Promise.all([
+    User.findById(userId),
+    Challenge.findById(challenge),
+  ]);
+  if (!competitor) {
+    return res.status(404).json({ message: 'The user does not exist' });
+  }
+  if (!existingChallenge) {
+    return res.status(404).json({ message: 'No challenge Found' });
+  }
+  // Check if the user has played less than 10 games
+  const creatorInfo = league.creators.find(
+    (creator) => creator.user.toString() === userId
+  );
+  if (creatorInfo && creatorInfo.numberOfGames >= 10) {
+    return res.status(401).json({
+      message: 'You have played more than 10 games in this league',
+    });
+  }
+  const allowedLeague = existingChallenge.league;
+  const league = competitor.currentLeague;
+  if (
+    allowedLeague.toString() !== league.toString() ||
+    !competitor.isCreator ||
+    existingChallenge.status === 'done' //need to make sure that it is working
+  ) {
+    return res.status(401).json({
+      message: 'You do not have permission to participate in this challenge',
+    });
+  }
 
-
-
-	const post = new Post();
-	post.title.en = title;
-	post.desc.en = desc;
-
-	post.link = link || '';
-	post.lang = lang;
-	post.category = category;
-	// post.deadline = deadline;
-	post.images = images;
-	post.user = user;
-	const createdPost = await post.save();
-	res.status(201).json(createdPost);
-});
-
-// @desc    translate a post
-// @route   POST /api/posts/:id/translate
-// @access  Private
-const translatePost = asyncHandler(async (req, res) => {
-	const post = await Post.findById(req.params.id);
-	const { title, desc } = req.body;
-	if (post) {
-		if (post.lang) {
-			post.title.ar = title;
-			post.desc.ar = desc;
-		} else {
-			post.title.en = title;
-			post.desc.en = desc;
-		}
-		const modifiedPost = await post.save();
-		res.status(200).json(modifiedPost);
-	} else {
-		res.status(404).json({ message: 'Post not found' });
-	}
+  const existingPost = await Post.findOneAndUpdate(
+    {
+      league,
+      status: 'waiting',
+      creator1: { $ne: competitor._id },
+      challenge,
+      league,
+    },
+    {
+      creator2: competitor,
+      video2: videoUrl,
+      thumbnail2: videoUrl.replace(/\.(mp4|avi|mov|wmv)$/i, '.jpg'),
+      status: 'done',
+    },
+    {
+      new: true,
+      upsert: false,
+    }
+  );
+  if (existingPost) {
+    existingChallenge.participants.push(existingPost.creator1, competitor);
+    const [savedChallenge, savedPost] = await Promise.all([
+      existingChallenge.save(),
+      existingPost.save(),
+    ]);
+    return res
+      .status(200)
+      .json(await savedPost.populate('comments.user', 'name image isAdmin'));
+  } else {
+    const newPost = new Post({
+      league,
+      creator1: competitor,
+      video1: videoUrl,
+      thumbnail1: videoUrl.replace(/\.(mp4|avi|mov|wmv)$/i, '.jpg'),
+      challenge,
+    });
+    await Promise.all([existingChallenge.save(), newPost.save()]);
+    return res.status(200).json({ newPost });
+  }
 });
 
 // @desc    Get a post by its Id
 // @route   Get /api/posts/:id
 // @access  Public
 const getPostById = asyncHandler(async (req, res) => {
-	const { id } = req.params;
+  const { id } = req.params;
 
-	const post = await Post.findById(id)
-		.populate({
-			path: 'user',
-			select: '-password -savedPosts -updatedAt -createdAt -_v',
-		})
-		.populate({
-			path: 'category',
-			select: '-updatedAt -createdAt _id -__v',
-		})
-		.populate({
-			path: 'comments.author',
-			select:
-				'-updatedAt -password -savedPosts -isAdmin -reports -blocked -email -verified -__v',
-		});
-	if (post) {
-		res.status(200).json(post);
-	} else {
-		res.status(404).json({ message: 'Post not found' });
-	}
-});
-// @desc    Get posts by its user Id
-// @route   Get /api/posts/user/:id
-// @access  Public
-const getPostsByUserId = asyncHandler(async (req, res) => {
-	const { id } = req.params;
-
-	const posts = await Post.find({ user: id }).sort({ createdAt: -1 }).populate({
-		"path": "category",
-	});
-	if (posts) {
-		res.status(200).json(posts);
-	} else {
-		res.status(404).json({ message: 'Posts not found' });
-	}
+  const post = await Post.findById(id)
+    .populate({
+      path: 'creator1',
+    })
+    .populate({
+      path: 'creator2',
+    });
+  if (post) {
+    res.status(200).json(post).populate('comments.user', 'name image isAdmin');
+  } else {
+    res.status(404).json({ message: 'Post not found' });
+  }
 });
 
-// @desc    Edit a post by its Id
-// @route   POST /api/posts/:id
-// @access  Private
-const editPostById = asyncHandler(async (req, res) => {
-	const { id } = req.params;
-	const { title, desc, category, images } = req.body;
-
-	const post = await Post.findById(id);
-	if (post) {
-		if (post.user.toString() == req.user._id || req.user.isAdmin === true) {
-
-
-			post.title.en = title || post.title.en;
-			post.desc.en = desc || post.desc.en;
-			post.category = category || post.category;
-			post.images = images || post.images;
-
-			const updatedPost = await post.save();
-			res.status(201).json(updatedPost);
-		} else {
-			res
-				.status(401)
-				.json({ message: 'you are not authorized to edit this project' });
-		}
-	} else {
-		res.status(404).json({ message: 'Post not found...' });
-	}
-});
-// @desc    Delete a post by its Id
+// @desc    delete a post by its Id
 // @route   DELETE /api/posts/:id
-// @access  Private
+// @access  Private || Admin
 const deletePost = asyncHandler(async (req, res) => {
-	const { id } = req.params;
-	const post = await Post.findById(id);
+  const { id } = req.params;
+  const userId = req.user.id;
+  const post = await Post.findById(id);
 
-	if (post) {
-		if (post.user.toString() == req.user._id || req.user.isAdmin === true) {
-			await post.remove();
-			res.status(201).json({ message: 'Post removed' });
-		} else {
-			res
-				.status(401)
-				.json({ message: 'you are not authorized to delete this project' });
-		}
-	} else {
-		res.status(404).json({ message: 'Post not found...' });
-	}
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(404).json({ message: `No Post with id: ${id}` });
+  }
+
+  if (!post) {
+    return res.status(404).json({ message: 'Post not found' });
+  }
+
+  if (
+    post.creator1.toString() !== userId &&
+    post.creator2.toString() !== userId &&
+    !req.user.isAdmin
+  ) {
+    return res
+      .status(403)
+      .json({ message: 'You are not authorized to delete this post' });
+  }
+
+  await post.remove();
+  res.status(201).json({ message: 'Post removed' });
 });
 
-//Updates part
-// @desc    GEt News
-// @route   Get /api/posts/:id/update
+// @desc    get a single new post
+// @route   POST /api/posts/new
 // @access  Public
-const getNews = asyncHandler(async (req, res) => {
-	const { id } = req.params;
-	const post = await Post.findById(id);
-	if (post) {
-		res.status(200).json(post.updates);
-	} else {
-		res.status(404).json({ message: 'Post not found...' });
-	}
+const getNewPost = asyncHandler(async (req, res) => {
+  const league = req.query.league
+    ? {
+        league: mongoose.Types.ObjectId(req.query.league),
+        status: 'done',
+      }
+    : {
+        status: 'done',
+      };
+  const count = await Post.countDocuments({ ...league });
+  const randomIndex = Math.floor(Math.random() * count);
+  const post = await Post.findOne({ ...league })
+    .skip(randomIndex)
+    .populate('league')
+    .populate('challenge')
+    .populate('comments.user', 'name image isAdmin');
+  if (!post) {
+    return res.status(404).json({ message: 'No matching post found' });
+  }
+  res.status(200).json(post);
 });
 
-// @desc    add news
-// @route   POST /api/posts/:id/update
-// @access  Private
-const addNews = asyncHandler(async (req, res) => {
-	const { title, desc, images } = req.body;
-	const { id } = req.params;
-
-	const post = await Post.findById(id);
-	if (post) {
-		if (post.user.toString() == req.user._id || req.user.isAdmin === true) {
-			post.updates.push({ title, desc, images });
-			const updatedPost = await post.save();
-			res.status(201).json(updatedPost);
-		} else {
-			res.status(401).json({
-				message: 'you are not authorized to add an update of this project',
-			});
-		}
-	} else {
-		res.status(404).json({ message: 'Post not found...' });
-	}
+// @desc    get user's posts
+// @route   POST /api/posts/user/:id
+// @access  Public
+const getUserPosts = asyncHandler(async (req, res) => {
+  const userId = req.params.id;
+  const posts = await Post.find({
+    $or: [{ creator1: userId }, { creator2: userId }],
+  });
+  res.status(200).json(posts).populate('comments.user', 'name image isAdmin');
 });
-
-// @desc    edit news
-// @route   POST /api/posts/:id/update/:update_id
-// @access  Private
-const editNews = asyncHandler(async (req, res) => {
-	const { id, update_id } = req.params;
-	const { title, desc, images } = req.body;
-	const post = await Post.findById(id);
-	if (post) {
-		if (post.user.toString() == req.user._id || req.user.isAdmin === true) {
-			const update = post.updates.find((post) => (post._id = update_id));
-			if (update) {
-				update.title = title || update.title;
-				update.desc = desc || update.desc;
-				update.images = images || update.images;
-			}
-			const updatedPost = await post.save();
-			res.status(201).json(updatedPost);
-		} else {
-			res.status(401).json({
-				message: 'you are not authorized to edit an update of this project',
-			});
-		}
-	} else {
-		res.status(404).json({ message: 'Post not found...' });
-	}
-});
-// @desc    delete news
-// @route   POST /api/posts/:id/update/:update_id/delete
-// @access  Private
-const deleteNews = asyncHandler(async (req, res) => {
-	const { id, update_id } = req.params;
-	const post = await Post.findById(id);
-	if (post) {
-		if (post.user.toString() == req.user._id || req.user.isAdmin === true) {
-			const update = post.updates.find((post) => (post._id = update_id));
-			if (update) {
-				post.updates = post.updates.filter((post) => post._id != update_id);
-			}
-			await post.save();
-			res.status(201).json({ message: 'Update removed' });
-		} else {
-			res.status(401).json({
-				message: 'you are not authorized to delete an update of this project',
-			});
-		}
-	} else {
-		res.status(404).json({ message: 'post not found...' });
-	}
-});
-// @desc    like a post
-// @route   POST /api/posts/:id/like
+// @desc    Like a post
+// @route   POST /api/posts/:id/llike
 // @access  Private
 const likePost = asyncHandler(async (req, res) => {
-	const { id } = req.params;
-	const post = await Post.findById(id);
-	const user = await User.findById(req.user._id);
+  const { postId } = req.params;
+  const userId = req.user.id;
 
-	if (!user) {
-		return res
-			.status(401)
-			.json({ message: 'you are not authorized, You need to login first' });
-	}
-	const index = post.likes.findIndex((id) => id === String(req.user._id));
-	if (index === -1) {
-		post.likes.push(req.user._id);
-		user.savedPosts.push(post._id);
-	} else {
-		post.likes = post.likes.filter((id) => id !== String(req.user._id));
-		user.savedPosts.filter((id) => id != String(post._id));
-	}
+  const user = await User.findById(userId);
 
-	await user.save();
-	const updatedPost = await Post.findByIdAndUpdate(id, post, { new: true });
+  const post = await Post.findById(postId);
 
-	res.status(201).json(updatedPost);
+  if (!post) {
+    return res.status(404).send('Post not found');
+  }
+
+  const alreadyLiked = post.likes.some((like) => like.toString() === userId);
+
+  if (alreadyLiked) {
+    post.likes = post.likes.filter((like) => like.toString() !== userId);
+    post.likeCount = post.likeCount - 1;
+    user.likedPosts.filter((post) => post.toString() !== postId);
+    await post.save();
+    await user.save();
+    return res.json({ message: 'Like removed successfully' });
+  } else {
+    post.likes.push(userId);
+    post.likeCount = post.likeCount + 1;
+    user.likedPosts.push(post._id);
+    await post.save();
+    await user.save();
+    return res.json({ message: 'Like added successfully' });
+  }
 });
-// @desc    Report a post
-// @route   POST /api/posts/:id/report
+
+// @desc    Add a comment to a post
+// @route   PUT /api/posts/:postId/comment
 // @access  Private
-const reportPost = asyncHandler(async (req, res) => {
-	const { id } = req.params;
-	const { title, desc, images } = req.body;
-	const post = await Post.findById(id);
-	let exist = 0;
-	if (post) {
-		post.reports.map((report) => {
-			if (report.reporter == String(req.user._id)) {
-				exist++;
-			}
-		});
-		if (exist != 0) {
-			res.status(401).json({ message: 'You can report a post only once' });
-		} else {
-			post.reports.push({ title, desc, images, reporter: req.user._id });
-			const reportedPost = await post.save();
-			res.status(201).json(reportedPost);
-		}
-	} else {
-		res.status(404).json({ message: 'Post not found...' });
-	}
+const addComment = asyncHandler(async (req, res) => {
+  const { postId } = req.params;
+  const userId = req.user.id;
+  const { content } = req.body;
+
+  const post = await Post.findById(postId);
+
+  if (!post) {
+    return res.status(404).json({ message: 'Post not found' });
+  }
+
+  const comment = {
+    user: userId,
+    content,
+    likes: [],
+  };
+
+  post.comments.push(comment);
+  await post.save();
+
+  return res.json({ message: 'Comment added successfully' });
 });
 
-// @desc    GEt reports of a spicific post
-// @route   Get /api/posts/:id/report
+// @desc    Remove a comment from a post
+// @route   DELETE /api/posts/:id/comment/:commentId
 // @access  Private
-const getReports = asyncHandler(async (req, res) => {
-	const { id } = req.params;
-	const post = await Post.findById(id).sort({ createdAt: -1 });
-	if (post) {
-		if (post.user.toString() == req.user._id || req.user.isAdmin === true) {
-			res.status(200).json(post.reports);
-		} else {
-			res.status(401).json({
-				message: 'You are not allowed to access the report of other user',
-			});
-		}
-	} else {
-		res.status(404).json({ message: 'Post not found...' });
-	}
+const removeComment = asyncHandler(async (req, res) => {
+  const { postId, commentId } = req.params;
+  const userId = req.user.id;
+
+  const post = await Post.findById(postId);
+
+  if (!post) {
+    return res.status(404).json({ message: 'Post not found' });
+  }
+
+  const comment = post.comments.find((c) => c._id.toString() === commentId);
+
+  if (!comment) {
+    return res.status(404).json({ message: 'Comment not found' });
+  }
+
+  // Check if the user is the owner of the comment or an admin
+  if (comment.user.toString() !== userId && req.user.isAdmin !== true) {
+    return res
+      .status(401)
+      .json({ message: 'Not authorized to remove this comment' });
+  }
+
+  post.comments = post.comments.filter((c) => c.id !== commentId);
+  await post.save();
+
+  return res.json({ message: 'Comment removed successfully' });
 });
-// @desc    delete an update
-// @route   POST /api/posts/:id/update/:update_id/delete
+
+// @desc    Like a comment
+// @route   PUT /api/posts/:id/comment/:commentId/like
 // @access  Private
-const deleteReport = asyncHandler(async (req, res) => {
-	const { id, report_id } = req.params;
-	const post = await Post.findById(id);
-	if (post) {
-		const report = post.reports.find((post) => (post._id = report_id));
-		if (report) {
-			post.reports = post.reports.filter((report) => report._id != report_id);
-		}
-		await post.save();
-		res.status(201).json({ message: 'Report was deleted successfully.' });
-	} else {
-		res.status(404).json({ message: 'post not found...' });
-	}
+const likeComment = asyncHandler(async (req, res) => {
+  const { postId, commentId } = req.params;
+  const userId = req.user.id;
+
+  const post = await Post.findById(postId);
+
+  if (!post) {
+    return res.status(404).json({ message: 'Post not found' });
+  }
+
+  const comment = post.comments.find((c) => c.id === commentId);
+
+  if (!comment) {
+    return res.status(404).json({ message: 'Comment not found' });
+  }
+
+  const alreadyLiked = comment.likes.some((like) => like.toString() === userId);
+
+  if (alreadyLiked) {
+    comment.likes = comment.likes.filter((like) => like.toString() !== userId);
+  } else {
+    comment.likes.push(userId);
+  }
+
+  await post.save();
+
+  return res.json({ message: "Comment's like toggled successfully" });
 });
 
-// @desc    Approve a post
-// @route   POST /api/posts/:id/approve
-// @access  Private/admin
-const approvePost = asyncHandler(async (req, res) => {
-	const post = await Post.findById(req.params.id);
-	if (post) {
-		post.status = 'approved';
-		await post.save();
-		res.status(201).json({ message: 'Project approved successfully' });
-	} else {
-		res.status(404).json({ message: 'Project not found' });
-	}
-});
-
-// @desc    Add/Remove to/from top3 section
-// @route   POST /api/posts/:id/top3
-// @access  Private/admin
-const switchTop3 = asyncHandler(async (req, res) => {
-	const post = await Post.findById(req.params.id);
-	if (post) {
-		post.status = post.status === 'top3' ? '' : 'top3';
-		await post.save();
-		res.status(201).json({ message: 'Project switched successfully' });
-	} else {
-		res.status(404).json({ message: 'Project not found' });
-	}
-});
-
-// @desc    create comment
-// @route   POST /api/posts/:id/comment
+// @desc    vote on a post
+// @route   POST /api/posts/:postId/vote/:winner
 // @access  Private
-const createComment = asyncHandler(async (req, res) => {
-	const { id } = req.params;
-	const { comment } = req.body;
-	const post = await Post.findById(id);
-	// console.log('post: ', post);
-	if (post) {
-		// const isAlreadyCommented = post.comments.find(
-		// 	(comment) => comment.author == String(req.user._id),
-		// );
-		// if (!isAlreadyCommented) {
-		// 	res.status(401).json({ message: 'You can comment a post only once' });
-		// } else {
-		// }
-		post.comments.unshift({ comment, author: req.user._id });
-		const commentedPost = await post.save();
-		res.status(201).json({ message: 'Comment created successfully.' });
-	} else {
-		res.status(404).json({ message: 'Post not found...' });
-	}
+const vote = asyncHandler(async (req, res) => {
+  const { postId, winner } = req.params;
+  const userId = req.user.id;
+
+  if (!mongoose.Types.ObjectId.isValid(postId)) {
+    return res.status(404).json({ message: `No Post with id: ${postId}` });
+  }
+
+  const post = await Post.findById(postId);
+
+  if (!post) {
+    return res.status(404).json({ message: `No Post with id: ${postId}` });
+  }
+
+  if (post.status !== 'done') {
+    return res
+      .status(401)
+      .json({ message: 'You cannot vote on a post with only one user' });
+  }
+
+  const challenge = await Challenge.findById(post.challenge);
+
+  if (!challenge || challenge.status === 'done') {
+    return res
+      .status(401)
+      .json({ message: 'You are not authorized to vote on this challenge' });
+  }
+
+  const existingVote = post.votes.find(
+    (vote) => vote.user.toString() === userId
+  );
+
+  if (existingVote) {
+    existingVote.winner = winner;
+  } else {
+    post.votes.push({ user: userId, winner });
+  }
+  await post.save();
+  return res.status(201).json({ message: 'voted with success' });
 });
-// @desc    update comment
-// @route   POST /api/posts/:id/comment/:comment_id
-// @access  Private
-const updateComment = asyncHandler(async (req, res) => {
-	const { id, comment_id } = req.params;
-	const { comment } = req.body;
-	const post = await Post.findById(id);
-	// console.log('Post: ', post);
-	if (post) {
-		// if (post.user.toString() !== req.user._id || req.user.isAdmin === false) {
-		// 	return res
-		// 		.status(401)
-		// 		.json({ message: 'You are not authorized to update this comment.' });
-		// }
-		const oldComment = post.comments.find(
-			(comment) => (comment._id = comment_id),
-		);
-		// console.log('oldComment: ', oldComment);
-		if (oldComment) {
-			oldComment.comment = comment;
-			console.log('oldComment: ', oldComment);
-			const projectComments = post.comments
-				.filter((comment) => comment._id == comment_id)
-				.unshift({ comment, author: req.user._id });
-			post.comments = projectComments;
-			console.log('Comments: ', post.comments);
-			await post.save();
-			res.status(201).json({
-				// comments: updatedPost.comments,
-				message: 'Comment is updated successfully.',
-			});
-		} else {
-			res.status(404).json({ message: 'comment not found...' });
-		}
-	} else {
-		res.status(404).json({ message: 'Post not found...' });
-	}
+
+// @desc    get wins of a user
+// @route   POST /api/posts/wins/:userId
+// @access  Public
+const getWinPosts = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+  const posts = await Post.find({
+    $or: [{ creator1: userId }, { creator2: userId }],
+    winner: userId,
+    status: 'done',
+  });
+  res.status(200).json(posts);
 });
-// @desc    delete comment
-// @route   POST /api/posts/:id/comment/:comment_id
-// @access  Private
-const deleteComment = asyncHandler(async (req, res) => {
-	const { id, comment_id } = req.params;
 
-	const post = await Post.findById(id);
-	if (!post) return res.status(404).json({ message: 'post not found...' });
-
-	const commentToDelete = post?.comments?.find(
-		(comment) => comment._id == comment_id,
-	);
-
-	if (!commentToDelete)
-		return res.status(404).json({ message: 'Comment not found...' });
-
-	if (String(commentToDelete?.author) != String(req?.user?._id)) {
-		return res
-			.status(401)
-			.json({ message: 'You are not authorized to delete this comment.' });
-	}
-
-	post.comments = post?.comments?.filter(
-		(comment) => comment._id.toString() !== comment_id,
-	);
-
-	await post.save();
-
-	res.status(201).json({ message: 'Comment was deleted successfully.' });
+// @desc    get loses of a user
+// @route   POST /api/posts/losses/:userId
+// @access  Public
+const getLosePosts = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+  const posts = await Post.find({
+    $or: [{ creator1: userId }, { creator2: userId }],
+    loser: userId,
+    status: 'done',
+  });
+  res.status(200).json(posts);
+});
+// @desc    get draws of a user
+// @route   POST /api/posts/draws/:userId
+// @access  Public
+const getDrawsPosts = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+  const posts = await Post.find({
+    $or: [{ creator1: userId }, { creator2: userId }],
+    isDraw: true,
+    status: 'done',
+  });
+  res.status(200).json(posts);
 });
 
 export {
-	getPosts,
-	createPost,
-	getPostById,
-	editPostById,
-	deletePost,
-	addNews,
-	getNews,
-	editNews,
-	deleteNews,
-	likePost,
-	reportPost,
-	getReports,
-	deleteReport,
-	getPostsByUserId,
-	approvePost,
-	switchTop3,
-	translatePost,
-	createComment,
-	deleteComment,
-	updateComment,
+  getPosts,
+  createPost,
+  getNewPost,
+  getUserPosts,
+  likePost,
+  getPostById,
+  deletePost,
+  addComment,
+  removeComment,
+  likeComment,
+  vote,
+  getWinPosts,
+  getLosePosts,
+  getDrawsPosts,
 };

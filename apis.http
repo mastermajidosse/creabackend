@@ -1,0 +1,202 @@
+//users section
+###
+get http://localhost:5000/api/users
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzZmU4ODIzODQxNWMwY2EyOGNmODM3MyIsImlhdCI6MTY3NzYyNTM3OSwiZXhwIjoxNjgwMjE3Mzc5fQ.4S09eOqdysnMgqYBdy2f_-mDkT01R19EbAV69_RUP2A
+
+### 
+post http://localhost:5000/api/users/login
+Content-Type: application/json
+
+{
+    "name":"user name",
+    "password":"12341234"
+}
+
+###
+post http://localhost:5000/api/users/register
+Content-Type: application/json
+
+{
+	"name":"user name",
+	"email":"user@gmail.com",
+	"password":"12341234",
+    "confirmPassword":"12341234",
+	"country":"Germany"
+}
+
+###
+#get user profile
+get http://localhost:5000/api/users/profile
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzZmU4ODIzODQxNWMwY2EyOGNmODM3MyIsImlhdCI6MTY3NzYyNTU2MywiZXhwIjoxNjgwMjE3NTYzfQ.BJZHNQoer9py_Fo8MsR6WhDQ9px8V8k-QWOwdpgoa7Y
+
+###
+#Update User profile
+put http://localhost:5000/api/users/profile
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzZmU4ODIzODQxNWMwY2EyOGNmODM3MyIsImlhdCI6MTY3NzYyNTU2MywiZXhwIjoxNjgwMjE3NTYzfQ.BJZHNQoer9py_Fo8MsR6WhDQ9px8V8k-QWOwdpgoa7Y
+
+{
+    "country":"Morocco"
+}
+
+
+###
+#get user by id
+get http://localhost:5000/api/users/63fe88238415c0ca28cf8373
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzZmU4ODIzODQxNWMwY2EyOGNmODM3MyIsImlhdCI6MTY3NzYyNTU2MywiZXhwIjoxNjgwMjE3NTYzfQ.BJZHNQoer9py_Fo8MsR6WhDQ9px8V8k-QWOwdpgoa7Y
+
+###
+#delete a user by id
+delete http://localhost:5000/api/users/63fe88238415c0ca28cf8373
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzZmU4ODIzODQxNWMwY2EyOGNmODM3MyIsImlhdCI6MTY3NzYyNTU2MywiZXhwIjoxNjgwMjE3NTYzfQ.BJZHNQoer9py_Fo8MsR6WhDQ9px8V8k-QWOwdpgoa7Y
+
+
+###
+#make a user creator
+put http://localhost:5000/api/users/create
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzZmU4ODIzODQxNWMwY2EyOGNmODM3MyIsImlhdCI6MTY3NzYyNTU2MywiZXhwIjoxNjgwMjE3NTYzfQ.BJZHNQoer9py_Fo8MsR6WhDQ9px8V8k-QWOwdpgoa7Y
+
+
+###
+#assign a league to a user
+put http://localhost:5000/api/users/63fe88238415c0ca28cf8373/league
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzZmU4ODIzODQxNWMwY2EyOGNmODM3MyIsImlhdCI6MTY3NzYyNTU2MywiZXhwIjoxNjgwMjE3NTYzfQ.BJZHNQoer9py_Fo8MsR6WhDQ9px8V8k-QWOwdpgoa7Y
+
+{
+    "league":"63f7889806a9ae82c6d2ab80"
+    }
+
+###
+#follow user
+put http://localhost:5000/api/users/follow/63f5112383ae218322dd60fd
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzZmU4ODIzODQxNWMwY2EyOGNmODM3MyIsImlhdCI6MTY3NzYyNTU2MywiZXhwIjoxNjgwMjE3NTYzfQ.BJZHNQoer9py_Fo8MsR6WhDQ9px8V8k-QWOwdpgoa7Y
+
+###
+#unfollow user
+put http://localhost:5000/api/users/unfollow/63f5112383ae218322dd60fd
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzZmU4ODIzODQxNWMwY2EyOGNmODM3MyIsImlhdCI6MTY3NzYyNTU2MywiZXhwIjoxNjgwMjE3NTYzfQ.BJZHNQoer9py_Fo8MsR6WhDQ9px8V8k-QWOwdpgoa7Y
+
+
+
+//posts section
+###
+get http://localhost:5000/api/posts
+
+###
+#create a post
+post http://localhost:5000/api/posts
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzZmU4ODIzODQxNWMwY2EyOGNmODM3MyIsImlhdCI6MTY3NzYyNTU2MywiZXhwIjoxNjgwMjE3NTYzfQ.BJZHNQoer9py_Fo8MsR6WhDQ9px8V8k-QWOwdpgoa7Y
+
+{
+	"videoUrl":"https://res.cloudinary.com/senyou/video/upload/v1677065674/main.mp4",
+    "challenge":"63fb6994e5f917879b4ced65"
+}
+
+###
+#get post by id
+get http://localhost:5000/api/posts/63fb6cce2442ba3bd427dfd6
+
+### 
+#get user's posts
+get http://localhost:5000/api/posts/user/63f5112383ae218322dd60fd
+
+###
+#like/removelike (from) post
+put http://localhost:5000/api/posts/63fb6cce2442ba3bd427dfd6/toggleLike
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzZmU4ODIzODQxNWMwY2EyOGNmODM3MyIsImlhdCI6MTY3NzYyNTU2MywiZXhwIjoxNjgwMjE3NTYzfQ.BJZHNQoer9py_Fo8MsR6WhDQ9px8V8k-QWOwdpgoa7Y
+
+###
+#delete post
+DELETE  http://localhost:5000/api/posts/63fb6cce2442ba3bd427dfd6
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzZmU4ODIzODQxNWMwY2EyOGNmODM3MyIsImlhdCI6MTY3NzYyNTU2MywiZXhwIjoxNjgwMjE3NTYzfQ.BJZHNQoer9py_Fo8MsR6WhDQ9px8V8k-QWOwdpgoa7Y
+
+
+//Challenges section
+###
+#get all challenges
+get http://localhost:5000/api/challenges
+
+###
+#create a new challenge
+post http://localhost:5000/api/challenges
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzZmU4ODIzODQxNWMwY2EyOGNmODM3MyIsImlhdCI6MTY3NzYyNTU2MywiZXhwIjoxNjgwMjE3NTYzfQ.BJZHNQoer9py_Fo8MsR6WhDQ9px8V8k-QWOwdpgoa7Y
+
+{
+	"name":"challenge test",
+    "theme":"theme for this challenge test",
+    "league":"63f7889806a9ae82c6d2ab80",
+    "season":"63fb6489fae133f43b1377a6"
+}
+
+###
+#get challenge by id
+get http://localhost:5000/api/challenges/63ff5e5c17c19abf8bb32439
+
+
+### 
+#update a challenge by id
+put http://localhost:5000/api/challenges/63ff5e5c17c19abf8bb32439
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzZmU4ODIzODQxNWMwY2EyOGNmODM3MyIsImlhdCI6MTY3NzYyNTU2MywiZXhwIjoxNjgwMjE3NTYzfQ.BJZHNQoer9py_Fo8MsR6WhDQ9px8V8k-QWOwdpgoa7Y
+
+{
+    "name":"name2 for test"
+}
+
+###
+#delete a challenge by id
+delete http://localhost:5000/api/challenges/63ff5e5c17c19abf8bb32439
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzZmU4ODIzODQxNWMwY2EyOGNmODM3MyIsImlhdCI6MTY3NzYyNTU2MywiZXhwIjoxNjgwMjE3NTYzfQ.BJZHNQoer9py_Fo8MsR6WhDQ9px8V8k-QWOwdpgoa7Y
+
+
+//leagues section
+###
+#get all leagues
+get http://localhost:5000/api/leagues
+
+###
+#create a new league
+post http://localhost:5000/api/leagues
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzZmU4ODIzODQxNWMwY2EyOGNmODM3MyIsImlhdCI6MTY3NzYyNTU2MywiZXhwIjoxNjgwMjE3NTYzfQ.BJZHNQoer9py_Fo8MsR6WhDQ9px8V8k-QWOwdpgoa7Y
+
+{
+	"nameLeague":"league test"
+}
+
+###
+#get a league by id
+get http://localhost:5000/api/leagues/63ff5f89844c2c8d8294b603
+
+
+
+//sesason section
+###
+#get all seasons
+get http://localhost:5000/api/seasons
+
+###
+#create a new league
+//startDAte should be greater than the moment of creation
+//startDate should be smaller than endDate
+post http://localhost:5000/api/seasons
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzZmU4ODIzODQxNWMwY2EyOGNmODM3MyIsImlhdCI6MTY3NzYyNTU2MywiZXhwIjoxNjgwMjE3NTYzfQ.BJZHNQoer9py_Fo8MsR6WhDQ9px8V8k-QWOwdpgoa7Y
+
+ {
+    "name": "season test",
+    "startDate": "2023-03-02T00:00:00.000Z",
+    "endDate": "2023-03-10T00:00:00.000Z"
+  }
+
+###
+#get a league by id
+get http://localhost:5000/api/seasons/63ff60119521b1364bbc243c
+

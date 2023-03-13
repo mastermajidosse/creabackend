@@ -1,134 +1,82 @@
 import mongoose from 'mongoose';
 
-const updateSchema = mongoose.Schema({
-	title: {
-		type: String,
-		required: true,
-	},
-	desc: {
-		type: String,
-		required: true,
-	},
-	images: [
-		{
-			type: String,
-			required: true,
-		},
-	],
-});
-const commentSchema = mongoose.Schema({
-	comment: {
-		type: String,
-		required: true,
-	},
-	author: {
-		type: mongoose.Schema.Types.ObjectId,
-		required: true,
-		ref: 'User',
-	},
-});
-const reportSchema = mongoose.Schema({
-	title: {
-		type: String,
-		required: true,
-	},
-	desc: {
-		type: String,
-		required: true,
-	},
-	reporter: {
-		type: mongoose.Schema.Types.ObjectId,
-		required: true,
-		ref: 'User',
-	},
-	images: [
-		{
-			type: String,
-		},
-	],
-});
-const socialMediaSchema = mongoose.Schema({
-	Facebook: {
-		type: String,
-	},
-	Instagram: {
-		type: String,
-	},
-	Twitter: {
-		type: String,
-	},
-});
-
-const postSchema = mongoose.Schema(
-	{
-		user: {
-			type: mongoose.Schema.Types.ObjectId,
-			required: true,
-			ref: 'User',
-		},
-		lang: {
-			type: Boolean,
-			default: 1,
-		},
-		link: {
-			type: String,
-			default: '',
-		},
-		title: {
-			en: {
-				type: String,
-			},
-			ar: {
-				type: String,
-				default: '',
-			},
-		},
-		desc: {
-			en: {
-				type: String,
-			},
-			ar: {
-				type: String,
-				default: '',
-			},
-		},
-		status: {
-			type: String,
-			default: 'false',
-		},
-		category: {
-			type: mongoose.Schema.Types.ObjectId,
-			ref: 'Category',
-			required: true,
-		},
-		images: [
-			{
-				type: String,
-				required: true,
-			},
-		],
-		// collected: {
-		// 	type: Number,
-		// 	default: false,
-		// },
-		// deadline: {
-		// 	type: Date,
-		// 	required: true,
-		// },
-		updates: [updateSchema],
-		likes: {
-			type: [String],
-			default: [],
-		},
-		reports: [reportSchema],
-		comments: [commentSchema],
-		socialMediaLinks: socialMediaSchema,
-	},
-	{
-		timestamps: true,
-	},
+const commentSchema = mongoose.Schema(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: 'User',
+    },
+    content: {
+      type: String,
+      required: true,
+    },
+    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  },
+  {
+    timestamps: true,
+  }
 );
 
-const Post = mongoose.model('posts', postSchema);
+const postSchema = mongoose.Schema(
+  {
+    creator1: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    creator2: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    video1: {
+      type: String,
+      default: '',
+    },
+    thumbnail1: {
+      type: String,
+      default: '',
+    },
+    thumbnail2: {
+      type: String,
+      default: '',
+    },
+    video2: {
+      type: String,
+      default: '',
+    },
+    league: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'League',
+      default: null,
+    },
+    challenge: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Challenge',
+      default: null,
+    },
+    status: {
+      type: String,
+      enum: ['waiting', 'done'],
+      default: 'waiting',
+    },
+    votes: [
+      {
+        user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        winner: { type: Number, enum: [1, 2] }, // 1 for video1, 2 for video2
+      },
+    ],
+    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    likeCount: {
+      type: Number,
+      default: 0,
+    },
+    comments: [commentSchema],
+    isDraw: {
+      type: Boolean,
+      default: false,
+    },
+    winner: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    loser: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+const Post = mongoose.model('Post', postSchema);
 
 export default Post;

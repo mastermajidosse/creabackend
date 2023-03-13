@@ -1,17 +1,5 @@
-import mongoose from 'mongoose'
-import bcrypt from 'bcryptjs'
-
-const socialMediaSchema = mongoose.Schema({
-  Facebook: {
-    type: String
-  },
-  Instagram: {
-    type: String
-  },
-  Twitter: {
-    type: String
-  }
-})
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
 const userSchema = mongoose.Schema(
   {
@@ -27,7 +15,6 @@ const userSchema = mongoose.Schema(
     phone: {
       type: String,
     },
-    socialMediaLinks: socialMediaSchema,
     password: {
       type: String,
       required: true,
@@ -38,44 +25,65 @@ const userSchema = mongoose.Schema(
     },
     image: {
       type: String,
-      // required: true,
+      default:
+        'https://res.cloudinary.com/senyou/image/upload/v1660064603/wvjn3kfgqvjm8fdsufrw.jpg',
     },
     isAdmin: {
       type: Boolean,
       required: true,
-      default: false
+      default: false,
     },
     blocked: {
       type: Boolean,
-      default: false
+      default: false,
     },
     verified: {
       type: Boolean,
-      default: false
+      default: false,
     },
-    savedPosts: {
-      type: [String],
-      default: []
-    }
+    likedPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }],
+    followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    wins: {
+      type: Number,
+      default: 0,
+    },
+    draws: {
+      type: Number,
+      default: 0,
+    },
+    loses: {
+      type: Number,
+      default: 0,
+    },
+    isCreator: {
+      type: Boolean,
+      default: false,
+    },
+    currentLeague: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'League',
+      default: null,
+    },
   },
   {
     timestamps: true,
   }
-)
+);
 
 userSchema.methods.matchPassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password)
-}
+  return await bcrypt.compare(enteredPassword, this.password);
+};
 
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
-    next()
+    next();
   }
 
-  const salt = await bcrypt.genSalt(10)
-  this.password = await bcrypt.hash(this.password, salt)
-})
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+});
 
-const User = mongoose.model('User', userSchema)
+const User = mongoose.model('User', userSchema);
 
-export default User
+export default User;
